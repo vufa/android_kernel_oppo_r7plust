@@ -9,4 +9,5 @@ cd kernel-3.10
 make mrproper
 cd ..
 rm forpack/boot.img
+rm crlv/boot/boot.img-kernel
 rm boot.zip
