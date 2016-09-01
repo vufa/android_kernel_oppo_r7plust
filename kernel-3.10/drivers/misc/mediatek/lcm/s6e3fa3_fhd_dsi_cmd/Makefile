@@ -3,7 +3,7 @@
 #
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
-obj-y += nt35596_fhd_auo_phantom.o
+obj-y += s6e3fa3_fhd_dsi_cmd.o
 
 
 
