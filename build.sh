@@ -11,7 +11,7 @@ export CROSS_COMPILE=/home/countstarlight/tools/prebuilts/linux-x86/aarch64/aarc
 ## MAKE ##
 cd kernel-3.10
 make r7plust_defconfig
-make -j16
+make -j8
 cd ..
 mv kernel-3.10/arch/arm64/boot/Image.gz-dtb crlv/boot/boot.img-kernel
 
