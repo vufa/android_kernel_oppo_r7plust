@@ -7676,7 +7676,7 @@ L:	devel@driverdev.osuosl.org
 S:	Supported
 F:	drivers/staging/
 
-STAGING - AGERE HERMES II and II.5 WIRELESS DRIVERS
+STAGING - AGERE R7PLUST II and II.5 WIRELESS DRIVERS
 M:	Henk de Groot <pe1dnn@amsat.org>
 S:	Odd Fixes
 F:	drivers/staging/wlags49_h2/

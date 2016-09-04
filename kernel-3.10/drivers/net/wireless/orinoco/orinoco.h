@@ -16,7 +16,7 @@
 #include <net/iw_handler.h>
 #include <net/cfg80211.h>
 
-#include "hermes.h"
+#include "r7plust.h"
 
 /* To enable debug messages */
 /*#define ORINOCO_DEBUG		3*/
@@ -88,7 +88,7 @@ struct orinoco_private {
 	struct iw_statistics wstats;
 
 	/* Hardware control variables */
-	struct hermes hw;
+	struct r7plust hw;
 	u16 txfid;
 
 	/* Capabilities of the hardware/firmware */
@@ -159,7 +159,7 @@ struct orinoco_private {
 	unsigned int tkip_cm_active:1;
 	unsigned int key_mgmt:3;
 
-#if defined(CONFIG_HERMES_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
+#if defined(CONFIG_R7PLUST_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
 	/* Cached in memory firmware to use during ->resume. */
 	const struct firmware *cached_pri_fw;
 	const struct firmware *cached_fw;
@@ -197,8 +197,8 @@ extern int orinoco_up(struct orinoco_private *priv);
 extern void orinoco_down(struct orinoco_private *priv);
 extern irqreturn_t orinoco_interrupt(int irq, void *dev_id);
 
-extern void __orinoco_ev_info(struct net_device *dev, struct hermes *hw);
-extern void __orinoco_ev_rx(struct net_device *dev, struct hermes *hw);
+extern void __orinoco_ev_info(struct net_device *dev, struct r7plust *hw);
+extern void __orinoco_ev_rx(struct net_device *dev, struct r7plust *hw);
 
 int orinoco_process_xmit_skb(struct sk_buff *skb,
 			     struct net_device *dev,

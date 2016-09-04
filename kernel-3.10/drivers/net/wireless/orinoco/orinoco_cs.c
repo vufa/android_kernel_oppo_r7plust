@@ -1,6 +1,6 @@
 /* orinoco_cs.c (formerly known as dldwd_cs.c)
  *
- * A driver for "Hermes" chipset based PCMCIA wireless adaptors, such
+ * A driver for "R7plust" chipset based PCMCIA wireless adaptors, such
  * as the Lucent WavelanIEEE/Orinoco cards and their OEM (Cabletron/
  * EnteraSys RoamAbout 802.11, ELSA Airlancer, Melco Buffalo and others).
  * It should also be usable on various Prism II based cards such as the
@@ -27,7 +27,7 @@
 /* Module stuff							    */
 /********************************************************************/
 
-MODULE_AUTHOR("David Gibson <hermes@gibson.dropbear.id.au>");
+MODULE_AUTHOR("David Gibson <r7plust@gibson.dropbear.id.au>");
 MODULE_DESCRIPTION("Driver for PCMCIA Lucent Orinoco,"
 		   " Prism II based and similar wireless cards");
 MODULE_LICENSE("Dual MPL/GPL");
@@ -134,7 +134,7 @@ static int
 orinoco_cs_config(struct pcmcia_device *link)
 {
 	struct orinoco_private *priv = link->priv;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int ret;
 	void __iomem *mem;
 
@@ -156,10 +156,10 @@ orinoco_cs_config(struct pcmcia_device *link)
 	if (!mem)
 		goto failed;
 
-	/* We initialize the hermes structure before completing PCMCIA
+	/* We initialize the r7plust structure before completing PCMCIA
 	 * configuration just in case the interrupt handler gets
 	 * called. */
-	hermes_struct_init(hw, mem, HERMES_16BIT_REGSPACING);
+	r7plust_struct_init(hw, mem, R7PLUST_16BIT_REGSPACING);
 
 	ret = pcmcia_request_irq(link, orinoco_interrupt);
 	if (ret)
@@ -272,7 +272,7 @@ static const struct pcmcia_device_id orinoco_cs_ids[] = {
 	PCMCIA_DEVICE_PROD_ID12("SAMSUNG", "11Mbps WLAN Card", 0x43d74cb4, 0x579bd91b),
 	PCMCIA_DEVICE_PROD_ID12("Symbol Technologies", "LA4111 Spectrum24 Wireless LAN PC Card", 0x3f02b4d6, 0x3663cb0e),
 	PCMCIA_DEVICE_MANF_CARD_PROD_ID3(0x0156, 0x0002, "Version 01.01", 0xd27deb1a), /* Lucent Orinoco */
-#ifdef CONFIG_HERMES_PRISM
+#ifdef CONFIG_R7PLUST_PRISM
 	/* Only entries that certainly identify Prism chipset */
 	PCMCIA_DEVICE_MANF_CARD(0x000b, 0x7100), /* SonicWALL Long Range Wireless Card */
 	PCMCIA_DEVICE_MANF_CARD(0x000b, 0x7300), /* Sohoware NCP110, Philips 802.11b */

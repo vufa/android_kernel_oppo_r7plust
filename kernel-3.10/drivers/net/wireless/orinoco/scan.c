@@ -9,7 +9,7 @@
 #include <linux/ieee80211.h>
 #include <net/cfg80211.h>
 
-#include "hermes.h"
+#include "r7plust.h"
 #include "orinoco.h"
 #include "main.h"
 
@@ -72,7 +72,7 @@ static int prism_build_supp_rates(u8 *buf, const u8 *rates)
 }
 
 static void orinoco_add_hostscan_result(struct orinoco_private *priv,
-					const union hermes_scan_info *bss)
+					const union r7plust_scan_info *bss)
 {
 	struct wiphy *wiphy = priv_to_wiphy(priv);
 	struct ieee80211_channel *channel;
@@ -225,9 +225,9 @@ void orinoco_add_hostscan_results(struct orinoco_private *priv,
 
 	/* Process the entries one by one */
 	for (; offset + atom_len <= len; offset += atom_len) {
-		union hermes_scan_info *atom;
+		union r7plust_scan_info *atom;
 
-		atom = (union hermes_scan_info *) (buf + offset);
+		atom = (union r7plust_scan_info *) (buf + offset);
 
 		orinoco_add_hostscan_result(priv, atom);
 	}

@@ -12,8 +12,8 @@
 #include <net/cfg80211.h>
 #include <net/cfg80211-wext.h>
 
-#include "hermes.h"
-#include "hermes_rid.h"
+#include "r7plust.h"
+#include "r7plust_rid.h"
 #include "orinoco.h"
 
 #include "hw.h"
@@ -89,7 +89,7 @@ nomem:
 static struct iw_statistics *orinoco_get_wireless_stats(struct net_device *dev)
 {
 	struct orinoco_private *priv = ndev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	struct iw_statistics *wstats = &priv->wstats;
 	int err;
 	unsigned long flags;
@@ -114,7 +114,7 @@ static struct iw_statistics *orinoco_get_wireless_stats(struct net_device *dev)
 	 * wireless extensions framework: I think we're in user
 	 * context, but a lock seems to be held by the time we get in
 	 * here so we're not safe to sleep here. */
-	hermes_inquire(hw, HERMES_INQ_TALLIES);
+	r7plust_inquire(hw, R7PLUST_INQ_TALLIES);
 
 	if (priv->iw_mode == NL80211_IFTYPE_ADHOC) {
 		memset(&wstats->qual, 0, sizeof(wstats->qual));
@@ -132,8 +132,8 @@ static struct iw_statistics *orinoco_get_wireless_stats(struct net_device *dev)
 			__le16 qual, signal, noise, unused;
 		} __packed cq;
 
-		err = HERMES_READ_RECORD(hw, USER_BAP,
-					 HERMES_RID_COMMSQUALITY, &cq);
+		err = R7PLUST_READ_RECORD(hw, USER_BAP,
+					 R7PLUST_RID_COMMSQUALITY, &cq);
 
 		if (!err) {
 			wstats->qual.qual = (int)le16_to_cpu(cq.qual);
@@ -457,9 +457,9 @@ static int orinoco_ioctl_setfreq(struct net_device *dev,
 	priv->channel = chan;
 	if (priv->iw_mode == NL80211_IFTYPE_MONITOR) {
 		/* Fast channel change - no commit if successful */
-		struct hermes *hw = &priv->hw;
-		err = hw->ops->cmd_wait(hw, HERMES_CMD_TEST |
-					    HERMES_TEST_SET_CHANNEL,
+		struct r7plust *hw = &priv->hw;
+		err = hw->ops->cmd_wait(hw, R7PLUST_CMD_TEST |
+					    R7PLUST_TEST_SET_CHANNEL,
 					chan, NULL);
 	}
 	orinoco_unlock(priv, &flags);
@@ -492,7 +492,7 @@ static int orinoco_ioctl_getsens(struct net_device *dev,
 				 char *extra)
 {
 	struct orinoco_private *priv = ndev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	u16 val;
 	int err;
 	unsigned long flags;
@@ -502,8 +502,8 @@ static int orinoco_ioctl_getsens(struct net_device *dev,
 
 	if (orinoco_lock(priv, &flags) != 0)
 		return -EBUSY;
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFSYSTEMSCALE, &val);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFSYSTEMSCALE, &val);
 	orinoco_unlock(priv, &flags);
 
 	if (err)
@@ -668,7 +668,7 @@ static int orinoco_ioctl_getpower(struct net_device *dev,
 				  char *extra)
 {
 	struct orinoco_private *priv = ndev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 	u16 enable, period, timeout, mcast;
 	unsigned long flags;
@@ -676,23 +676,23 @@ static int orinoco_ioctl_getpower(struct net_device *dev,
 	if (orinoco_lock(priv, &flags) != 0)
 		return -EBUSY;
 
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFPMENABLED, &enable);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFPMENABLED, &enable);
 	if (err)
 		goto out;
 
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFMAXSLEEPDURATION, &period);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFMAXSLEEPDURATION, &period);
 	if (err)
 		goto out;
 
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFPMHOLDOVERDURATION, &timeout);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFPMHOLDOVERDURATION, &timeout);
 	if (err)
 		goto out;
 
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFMULTICASTRECEIVE, &mcast);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFMULTICASTRECEIVE, &mcast);
 	if (err)
 		goto out;
 
@@ -873,7 +873,7 @@ static int orinoco_ioctl_set_auth(struct net_device *dev,
 				  union iwreq_data *wrqu, char *extra)
 {
 	struct orinoco_private *priv = ndev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	struct iw_param *param = &wrqu->param;
 	unsigned long flags;
 	int ret = -EINPROGRESS;
@@ -902,7 +902,7 @@ static int orinoco_ioctl_set_auth(struct net_device *dev,
 		break;
 
 	case IW_AUTH_KEY_MGMT:
-		/* wl_lkm implies value 2 == PSK for Hermes I
+		/* wl_lkm implies value 2 == PSK for R7plust I
 		 * which ties in with WEXT
 		 * no other hints tho :(
 		 */
@@ -919,10 +919,10 @@ static int orinoco_ioctl_set_auth(struct net_device *dev,
 		 */
 		if (param->value) {
 			priv->tkip_cm_active = 1;
-			ret = hermes_disable_port(hw, 0);
+			ret = r7plust_disable_port(hw, 0);
 		} else {
 			priv->tkip_cm_active = 0;
-			ret = hermes_enable_port(hw, 0);
+			ret = r7plust_enable_port(hw, 0);
 		}
 		break;
 
@@ -1258,7 +1258,7 @@ static int orinoco_ioctl_getpreamble(struct net_device *dev,
 	return 0;
 }
 
-/* ioctl interface to hermes_read_ltv()
+/* ioctl interface to r7plust_read_ltv()
  * To use with iwpriv, pass the RID as the token argument, e.g.
  * iwpriv get_rid [0xfc00]
  * At least Wireless Tools 25 is required to use iwpriv.
@@ -1269,7 +1269,7 @@ static int orinoco_ioctl_getrid(struct net_device *dev,
 				char *extra)
 {
 	struct orinoco_private *priv = ndev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int rid = data->flags;
 	u16 length;
 	int err;
@@ -1291,7 +1291,7 @@ static int orinoco_ioctl_getrid(struct net_device *dev,
 	if (err)
 		goto out;
 
-	data->length = min_t(u16, HERMES_RECLEN_TO_BYTES(length),
+	data->length = min_t(u16, R7PLUST_RECLEN_TO_BYTES(length),
 			     MAX_RID_LEN);
 
  out:

@@ -8,8 +8,8 @@
 #include <linux/device.h>
 #include <linux/module.h>
 
-#include "hermes.h"
-#include "hermes_dld.h"
+#include "r7plust.h"
+#include "r7plust_dld.h"
 #include "orinoco.h"
 
 #include "fw.h"
@@ -79,7 +79,7 @@ static const char *validate_fw(const struct orinoco_fw_header *hdr, size_t len)
 	return NULL;
 }
 
-#if defined(CONFIG_HERMES_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
+#if defined(CONFIG_R7PLUST_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
 static inline const struct firmware *
 orinoco_cached_fw_get(struct orinoco_private *priv, bool primary)
 {
@@ -101,7 +101,7 @@ orinoco_dl_firmware(struct orinoco_private *priv,
 	/* Plug Data Area (PDA) */
 	__le16 *pda;
 
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	const struct firmware *fw_entry;
 	const struct orinoco_fw_header *hdr;
 	const unsigned char *first_block;
@@ -161,7 +161,7 @@ orinoco_dl_firmware(struct orinoco_private *priv,
 		       le32_to_cpu(hdr->block_offset));
 	end = fw_entry->data + fw_entry->size;
 
-	err = hermes_program(hw, first_block, end);
+	err = r7plust_program(hw, first_block, end);
 	dev_dbg(dev, "Program returned %d\n", err);
 	if (err != 0)
 		goto abort;
@@ -171,7 +171,7 @@ orinoco_dl_firmware(struct orinoco_private *priv,
 		       le16_to_cpu(hdr->headersize) +
 		       le32_to_cpu(hdr->pdr_offset));
 
-	err = hermes_apply_pda_with_defaults(hw, first_block, end, pda,
+	err = r7plust_apply_pda_with_defaults(hw, first_block, end, pda,
 					     &pda[fw->pda_size / sizeof(*pda)]);
 	dev_dbg(dev, "Apply PDA returned %d\n", err);
 	if (err)
@@ -184,7 +184,7 @@ orinoco_dl_firmware(struct orinoco_private *priv,
 		goto abort;
 
 	/* Check if we're running */
-	dev_dbg(dev, "hermes_present returned %d\n", hermes_present(hw));
+	dev_dbg(dev, "r7plust_present returned %d\n", r7plust_present(hw));
 
 abort:
 	/* If we requested the firmware, release it. */
@@ -206,7 +206,7 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
 		const unsigned char *image, const void *end,
 		int secondary)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int ret = 0;
 	const unsigned char *ptr;
 	const unsigned char *first_block;
@@ -238,15 +238,15 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
 	}
 
 	/* Program the adapter with new firmware */
-	ret = hermes_program(hw, first_block, end);
+	ret = r7plust_program(hw, first_block, end);
 	if (ret)
 		goto free;
 
 	/* Write the PDA to the adapter */
 	if (secondary) {
-		size_t len = hermes_blocks_length(first_block, end);
+		size_t len = r7plust_blocks_length(first_block, end);
 		ptr = first_block + len;
-		ret = hermes_apply_pda(hw, ptr, end, pda,
+		ret = r7plust_apply_pda(hw, ptr, end, pda,
 				       &pda[fw->pda_size / sizeof(*pda)]);
 		kfree(pda);
 		if (ret)
@@ -260,15 +260,15 @@ symbol_dl_image(struct orinoco_private *priv, const struct fw_info *fw,
 			return ret;
 	}
 
-	/* Reset hermes chip and make sure it responds */
+	/* Reset r7plust chip and make sure it responds */
 	ret = hw->ops->init(hw);
 
-	/* hermes_reset() should return 0 with the secondary firmware */
+	/* r7plust_reset() should return 0 with the secondary firmware */
 	if (secondary && ret != 0)
 		return -ENODEV;
 
 	/* And this should work with any firmware */
-	if (!hermes_present(hw))
+	if (!r7plust_present(hw))
 		return -ENODEV;
 
 	return 0;
@@ -353,7 +353,7 @@ int orinoco_download(struct orinoco_private *priv)
 	return err;
 }
 
-#if defined(CONFIG_HERMES_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
+#if defined(CONFIG_R7PLUST_CACHE_FW_ON_INIT) || defined(CONFIG_PM_SLEEP)
 void orinoco_cache_fw(struct orinoco_private *priv, int ap)
 {
 	const struct firmware *fw_entry = NULL;

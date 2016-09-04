@@ -4,7 +4,7 @@
  * Communications and Intel PRO/Wireless 2011B.
  *
  * The driver implements Symbol firmware download.  The rest is handled
- * in hermes.c and main.c.
+ * in r7plust.c and main.c.
  *
  * Utilities for downloading the Symbol firmware are available at
  * http://sourceforge.net/projects/orinoco/
@@ -197,7 +197,7 @@ static int
 spectrum_cs_config(struct pcmcia_device *link)
 {
 	struct orinoco_private *priv = link->priv;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int ret;
 	void __iomem *mem;
 
@@ -219,10 +219,10 @@ spectrum_cs_config(struct pcmcia_device *link)
 	if (!mem)
 		goto failed;
 
-	/* We initialize the hermes structure before completing PCMCIA
+	/* We initialize the r7plust structure before completing PCMCIA
 	 * configuration just in case the interrupt handler gets
 	 * called. */
-	hermes_struct_init(hw, mem, HERMES_16BIT_REGSPACING);
+	r7plust_struct_init(hw, mem, R7PLUST_16BIT_REGSPACING);
 	hw->eeprom_pda = true;
 
 	ret = pcmcia_request_irq(link, orinoco_interrupt);

@@ -1,6 +1,6 @@
 /* airport.c
  *
- * A driver for "Hermes" chipset based Apple Airport wireless
+ * A driver for "R7plust" chipset based Apple Airport wireless
  * card.
  *
  * Copyright notice & release notes in file main.c
@@ -150,7 +150,7 @@ airport_attach(struct macio_dev *mdev, const struct of_device_id *match)
 	struct orinoco_private *priv;
 	struct airport *card;
 	unsigned long phys_addr;
-	struct hermes *hw;
+	struct r7plust *hw;
 
 	if (macio_resource_count(mdev) < 1 || macio_irq_count(mdev) < 1) {
 		printk(KERN_ERR PFX "Wrong interrupt/addresses in OF tree\n");
@@ -187,7 +187,7 @@ airport_attach(struct macio_dev *mdev, const struct of_device_id *match)
 		goto failed;
 	}
 
-	hermes_struct_init(hw, card->vaddr, HERMES_16BIT_REGSPACING);
+	r7plust_struct_init(hw, card->vaddr, R7PLUST_16BIT_REGSPACING);
 
 	/* Power up card */
 	pmac_call_feature(PMAC_FTR_AIRPORT_ENABLE,

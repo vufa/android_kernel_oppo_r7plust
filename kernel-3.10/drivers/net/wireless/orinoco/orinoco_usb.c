@@ -218,8 +218,8 @@ struct ezusb_packet {
 	__le16 frame_type;	/* 0x01 for data frames, 0x02 otherwise */
 	__le16 size;		/* transport size */
 	__le16 crc;		/* CRC up to here */
-	__le16 hermes_len;
-	__le16 hermes_rid;
+	__le16 r7plust_len;
+	__le16 r7plust_rid;
 	u8 data[0];
 } __packed;
 
@@ -260,7 +260,7 @@ struct ezusb_priv {
 	struct list_head req_pending;
 	struct list_head req_active;
 	spinlock_t reply_count_lock;
-	u16 hermes_reg_fake[0x40];
+	u16 r7plust_reg_fake[0x40];
 	u8 *bap_buf;
 	struct urb *read_urb;
 	int read_pipe;
@@ -631,12 +631,12 @@ static void ezusb_request_in_callback(struct ezusb_priv *upriv,
 			reply_count =
 			    ezusb_reply_inc(c->buf->req_reply_count);
 			if ((ans->ans_reply_count == reply_count)
-			    && (le16_to_cpu(ans->hermes_rid) == c->in_rid)) {
+			    && (le16_to_cpu(ans->r7plust_rid) == c->in_rid)) {
 				ctx = c;
 				break;
 			}
 			dbg("Skipped (0x%x/0x%x) (%d/%d)",
-			    le16_to_cpu(ans->hermes_rid),
+			    le16_to_cpu(ans->r7plust_rid),
 			    c->in_rid, ans->ans_reply_count, reply_count);
 		}
 	}
@@ -644,7 +644,7 @@ static void ezusb_request_in_callback(struct ezusb_priv *upriv,
 	if (ctx == NULL) {
 		spin_unlock_irqrestore(&upriv->req_lock, flags);
 		err("%s: got unexpected RID: 0x%04X", __func__,
-		    le16_to_cpu(ans->hermes_rid));
+		    le16_to_cpu(ans->r7plust_rid));
 		ezusb_req_queue_run(upriv);
 		return;
 	}
@@ -756,8 +756,8 @@ static int ezusb_fill_req(struct ezusb_packet *req, u16 length, u16 rid,
 	req->frame_type = cpu_to_le16(frame_type);
 	req->size = cpu_to_le16(length + 4);
 	req->crc = cpu_to_le16(build_crc(req));
-	req->hermes_len = cpu_to_le16(HERMES_BYTES_TO_RECLEN(length));
-	req->hermes_rid = cpu_to_le16(rid);
+	req->r7plust_len = cpu_to_le16(R7PLUST_BYTES_TO_RECLEN(length));
+	req->r7plust_rid = cpu_to_le16(rid);
 	if (data)
 		memcpy(req->data, data, length);
 	return total_size;
@@ -941,8 +941,8 @@ static int ezusb_access_ltv(struct ezusb_priv *upriv,
 		struct ezusb_packet *ans = ctx->buf;
 		unsigned exp_len;
 
-		if (ans->hermes_len != 0)
-			exp_len = le16_to_cpu(ans->hermes_len) * 2 + 12;
+		if (ans->r7plust_len != 0)
+			exp_len = le16_to_cpu(ans->r7plust_len) * 2 + 12;
 		else
 			exp_len = 14;
 
@@ -957,14 +957,14 @@ static int ezusb_access_ltv(struct ezusb_priv *upriv,
 		if (ans_buff)
 			memcpy(ans_buff, ans->data, min(exp_len, ans_size));
 		if (ans_length)
-			*ans_length = le16_to_cpu(ans->hermes_len);
+			*ans_length = le16_to_cpu(ans->r7plust_len);
 	}
  exit:
 	ezusb_request_context_put(ctx);
 	return retval;
 }
 
-static int ezusb_write_ltv(struct hermes *hw, int bap, u16 rid,
+static int ezusb_write_ltv(struct r7plust *hw, int bap, u16 rid,
 			   u16 length, const void *data)
 {
 	struct ezusb_priv *upriv = hw->priv;
@@ -974,9 +974,9 @@ static int ezusb_write_ltv(struct hermes *hw, int bap, u16 rid,
 	if (length == 0)
 		return -EINVAL;
 
-	length = HERMES_RECLEN_TO_BYTES(length);
+	length = R7PLUST_RECLEN_TO_BYTES(length);
 
-	/* On memory mapped devices HERMES_RID_CNFGROUPADDRESSES can be
+	/* On memory mapped devices R7PLUST_RID_CNFGROUPADDRESSES can be
 	 * set to be empty, but the USB bridge doesn't like it */
 	if (length == 0)
 		return 0;
@@ -994,7 +994,7 @@ static int ezusb_write_ltv(struct hermes *hw, int bap, u16 rid,
 				NULL, 0, NULL);
 }
 
-static int ezusb_read_ltv(struct hermes *hw, int bap, u16 rid,
+static int ezusb_read_ltv(struct r7plust *hw, int bap, u16 rid,
 			  unsigned bufsize, u16 *length, void *buf)
 {
 	struct ezusb_priv *upriv = hw->priv;
@@ -1011,8 +1011,8 @@ static int ezusb_read_ltv(struct hermes *hw, int bap, u16 rid,
 				buf, bufsize, length);
 }
 
-static int ezusb_doicmd_wait(struct hermes *hw, u16 cmd, u16 parm0, u16 parm1,
-			     u16 parm2, struct hermes_response *resp)
+static int ezusb_doicmd_wait(struct r7plust *hw, u16 cmd, u16 parm0, u16 parm1,
+			     u16 parm2, struct r7plust_response *resp)
 {
 	struct ezusb_priv *upriv = hw->priv;
 	struct request_context *ctx;
@@ -1033,8 +1033,8 @@ static int ezusb_doicmd_wait(struct hermes *hw, u16 cmd, u16 parm0, u16 parm1,
 				EZUSB_FRAME_CONTROL, NULL, 0, NULL);
 }
 
-static int ezusb_docmd_wait(struct hermes *hw, u16 cmd, u16 parm0,
-			    struct hermes_response *resp)
+static int ezusb_docmd_wait(struct r7plust *hw, u16 cmd, u16 parm0,
+			    struct r7plust_response *resp)
 {
 	struct ezusb_priv *upriv = hw->priv;
 	struct request_context *ctx;
@@ -1054,7 +1054,7 @@ static int ezusb_docmd_wait(struct hermes *hw, u16 cmd, u16 parm0,
 				EZUSB_FRAME_CONTROL, NULL, 0, NULL);
 }
 
-static int ezusb_bap_pread(struct hermes *hw, int bap,
+static int ezusb_bap_pread(struct r7plust *hw, int bap,
 			   void *buf, int len, u16 id, u16 offset)
 {
 	struct ezusb_priv *upriv = hw->priv;
@@ -1087,7 +1087,7 @@ static int ezusb_bap_pread(struct hermes *hw, int bap,
 	return 0;
 }
 
-static int ezusb_read_pda(struct hermes *hw, __le16 *pda,
+static int ezusb_read_pda(struct r7plust *hw, __le16 *pda,
 			  u32 pda_addr, u16 pda_len)
 {
 	struct ezusb_priv *upriv = hw->priv;
@@ -1112,7 +1112,7 @@ static int ezusb_read_pda(struct hermes *hw, __le16 *pda,
 				NULL);
 }
 
-static int ezusb_program_init(struct hermes *hw, u32 entry_point)
+static int ezusb_program_init(struct r7plust *hw, u32 entry_point)
 {
 	struct ezusb_priv *upriv = hw->priv;
 	struct request_context *ctx;
@@ -1126,7 +1126,7 @@ static int ezusb_program_init(struct hermes *hw, u32 entry_point)
 				EZUSB_FRAME_CONTROL, NULL, 0, NULL);
 }
 
-static int ezusb_program_end(struct hermes *hw)
+static int ezusb_program_end(struct r7plust *hw)
 {
 	struct ezusb_priv *upriv = hw->priv;
 	struct request_context *ctx;
@@ -1139,7 +1139,7 @@ static int ezusb_program_end(struct hermes *hw)
 				EZUSB_FRAME_CONTROL, NULL, 0, NULL);
 }
 
-static int ezusb_program_bytes(struct hermes *hw, const char *buf,
+static int ezusb_program_bytes(struct r7plust *hw, const char *buf,
 			       u32 addr, u32 len)
 {
 	struct ezusb_priv *upriv = hw->priv;
@@ -1164,7 +1164,7 @@ static int ezusb_program_bytes(struct hermes *hw, const char *buf,
 				EZUSB_FRAME_CONTROL, NULL, 0, NULL);
 }
 
-static int ezusb_program(struct hermes *hw, const char *buf,
+static int ezusb_program(struct r7plust *hw, const char *buf,
 			 u32 addr, u32 len)
 {
 	u32 ch_addr;
@@ -1263,7 +1263,7 @@ static netdev_tx_t ezusb_xmit(struct sk_buff *skb, struct net_device *dev)
 	memcpy(buf, skb->data, skb->len);
 	buf += skb->len;
 
-	if (tx_control & HERMES_TXCTRL_MIC) {
+	if (tx_control & R7PLUST_TXCTRL_MIC) {
 		u8 *m = mic;
 		/* Mic has been offset so it can be copied to an even
 		 * address. We're copying eveything anyway, so we
@@ -1309,7 +1309,7 @@ static netdev_tx_t ezusb_xmit(struct sk_buff *skb, struct net_device *dev)
 	return NETDEV_TX_BUSY;
 }
 
-static int ezusb_allocate(struct hermes *hw, u16 size, u16 *fid)
+static int ezusb_allocate(struct r7plust *hw, u16 size, u16 *fid)
 {
 	*fid = EZUSB_RID_TX;
 	return 0;
@@ -1361,7 +1361,7 @@ static int ezusb_hard_reset(struct orinoco_private *priv)
 }
 
 
-static int ezusb_init(struct hermes *hw)
+static int ezusb_init(struct r7plust *hw)
 {
 	struct ezusb_priv *upriv = hw->priv;
 	int retval;
@@ -1372,22 +1372,22 @@ static int ezusb_init(struct hermes *hw)
 	upriv->reply_count = 0;
 	/* Write the MAGIC number on the simulated registers to keep
 	 * orinoco.c happy */
-	hermes_write_regn(hw, SWSUPPORT0, HERMES_MAGIC);
-	hermes_write_regn(hw, RXFID, EZUSB_RID_RX);
+	r7plust_write_regn(hw, SWSUPPORT0, R7PLUST_MAGIC);
+	r7plust_write_regn(hw, RXFID, EZUSB_RID_RX);
 
 	usb_kill_urb(upriv->read_urb);
 	ezusb_submit_in_urb(upriv);
 
 	retval = ezusb_write_ltv(hw, 0, EZUSB_RID_INIT1,
-				 HERMES_BYTES_TO_RECLEN(2), "\x10\x00");
+				 R7PLUST_BYTES_TO_RECLEN(2), "\x10\x00");
 	if (retval < 0) {
 		printk(KERN_ERR PFX "EZUSB_RID_INIT1 error %d\n", retval);
 		return retval;
 	}
 
-	retval = ezusb_docmd_wait(hw, HERMES_CMD_INIT, 0, NULL);
+	retval = ezusb_docmd_wait(hw, R7PLUST_CMD_INIT, 0, NULL);
 	if (retval < 0) {
-		printk(KERN_ERR PFX "HERMES_CMD_INIT error %d\n", retval);
+		printk(KERN_ERR PFX "R7PLUST_CMD_INIT error %d\n", retval);
 		return retval;
 	}
 
@@ -1399,7 +1399,7 @@ static void ezusb_bulk_in_callback(struct urb *urb)
 	struct ezusb_priv *upriv = (struct ezusb_priv *) urb->context;
 	struct ezusb_packet *ans = urb->transfer_buffer;
 	u16 crc;
-	u16 hermes_rid;
+	u16 r7plust_rid;
 
 	if (upriv->udev == NULL) {
 		dbg("disconnected");
@@ -1437,19 +1437,19 @@ static void ezusb_bulk_in_callback(struct urb *urb)
 		goto resubmit;
 	}
 
-	hermes_rid = le16_to_cpu(ans->hermes_rid);
-	if ((hermes_rid != EZUSB_RID_RX) && !EZUSB_IS_INFO(hermes_rid)) {
+	r7plust_rid = le16_to_cpu(ans->r7plust_rid);
+	if ((r7plust_rid != EZUSB_RID_RX) && !EZUSB_IS_INFO(r7plust_rid)) {
 		ezusb_request_in_callback(upriv, urb);
 	} else if (upriv->dev) {
 		struct net_device *dev = upriv->dev;
 		struct orinoco_private *priv = ndev_priv(dev);
-		struct hermes *hw = &priv->hw;
+		struct r7plust *hw = &priv->hw;
 
-		if (hermes_rid == EZUSB_RID_RX) {
+		if (r7plust_rid == EZUSB_RID_RX) {
 			__orinoco_ev_rx(dev, hw);
 		} else {
-			hermes_write_regn(hw, INFOFID,
-					  le16_to_cpu(ans->hermes_rid));
+			r7plust_write_regn(hw, INFOFID,
+					  le16_to_cpu(ans->r7plust_rid));
 			__orinoco_ev_info(dev, hw);
 		}
 	}
@@ -1545,7 +1545,7 @@ static void ezusb_unlock_irq(spinlock_t *lock) __releases(lock)
 	spin_unlock_bh(lock);
 }
 
-static const struct hermes_ops ezusb_ops = {
+static const struct r7plust_ops ezusb_ops = {
 	.init = ezusb_init,
 	.cmd_wait = ezusb_docmd_wait,
 	.init_cmd_wait = ezusb_doicmd_wait,
@@ -1580,7 +1580,7 @@ static int ezusb_probe(struct usb_interface *interface,
 {
 	struct usb_device *udev = interface_to_usbdev(interface);
 	struct orinoco_private *priv;
-	struct hermes *hw;
+	struct r7plust *hw;
 	struct ezusb_priv *upriv = NULL;
 	struct usb_interface_descriptor *iface_desc;
 	struct usb_endpoint_descriptor *ep;
@@ -1608,8 +1608,8 @@ static int ezusb_probe(struct usb_interface *interface,
 
 	upriv->udev = udev;
 
-	hw->iobase = (void __force __iomem *) &upriv->hermes_reg_fake;
-	hw->reg_spacing = HERMES_16BIT_REGSPACING;
+	hw->iobase = (void __force __iomem *) &upriv->r7plust_reg_fake;
+	hw->reg_spacing = R7PLUST_16BIT_REGSPACING;
 	hw->priv = upriv;
 	hw->ops = &ezusb_ops;
 

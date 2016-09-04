@@ -3,11 +3,11 @@
  * Driver for Prism 2.5/3 devices that have a direct PCI interface
  * (i.e. these are not PCMCIA cards in a PCMCIA-to-PCI bridge).
  * The card contains only one PCI region, which contains all the usual
- * hermes registers, as well as the COR register.
+ * r7plust registers, as well as the COR register.
  *
  * Current maintainers are:
  *	Pavel Roskin <proski AT gnu.org>
- * and	David Gibson <hermes AT gibson.dropbear.id.au>
+ * and	David Gibson <r7plust AT gibson.dropbear.id.au>
  *
  * Some of this code is borrowed from orinoco_plx.c
  *	Copyright (C) 2001 Daniel Barlow <dan AT telent.net>
@@ -54,17 +54,17 @@
 #include "orinoco_pci.h"
 
 /* Offset of the COR register of the PCI card */
-#define HERMES_PCI_COR		(0x26)
+#define R7PLUST_PCI_COR		(0x26)
 
 /* Bitmask to reset the card */
-#define HERMES_PCI_COR_MASK	(0x0080)
+#define R7PLUST_PCI_COR_MASK	(0x0080)
 
 /* Magic timeouts for doing the reset.
  * Those times are straight from wlan-ng, and it is claimed that they
  * are necessary. Alan will kill me. Take your time and grab a coffee. */
-#define HERMES_PCI_COR_ONT	(250)		/* ms */
-#define HERMES_PCI_COR_OFFT	(500)		/* ms */
-#define HERMES_PCI_COR_BUSYT	(500)		/* ms */
+#define R7PLUST_PCI_COR_ONT	(250)		/* ms */
+#define R7PLUST_PCI_COR_OFFT	(500)		/* ms */
+#define R7PLUST_PCI_COR_BUSYT	(500)		/* ms */
 
 /*
  * Do a soft reset of the card using the Configuration Option Register
@@ -76,33 +76,33 @@
  * jiffies to regulate time instead of a straight mdelay(). Usually we
  * need only around 245 iteration of the loop to do 250 ms delay.
  *
- * Note bis : Don't try to access HERMES_CMD during the reset phase.
+ * Note bis : Don't try to access R7PLUST_CMD during the reset phase.
  * It just won't work !
  */
 static int orinoco_pci_cor_reset(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	unsigned long timeout;
 	u16 reg;
 
 	/* Assert the reset until the card notices */
-	hermes_write_regn(hw, PCI_COR, HERMES_PCI_COR_MASK);
-	mdelay(HERMES_PCI_COR_ONT);
+	r7plust_write_regn(hw, PCI_COR, R7PLUST_PCI_COR_MASK);
+	mdelay(R7PLUST_PCI_COR_ONT);
 
 	/* Give time for the card to recover from this hard effort */
-	hermes_write_regn(hw, PCI_COR, 0x0000);
-	mdelay(HERMES_PCI_COR_OFFT);
+	r7plust_write_regn(hw, PCI_COR, 0x0000);
+	mdelay(R7PLUST_PCI_COR_OFFT);
 
 	/* The card is ready when it's no longer busy */
-	timeout = jiffies + (HERMES_PCI_COR_BUSYT * HZ / 1000);
-	reg = hermes_read_regn(hw, CMD);
-	while (time_before(jiffies, timeout) && (reg & HERMES_CMD_BUSY)) {
+	timeout = jiffies + (R7PLUST_PCI_COR_BUSYT * HZ / 1000);
+	reg = r7plust_read_regn(hw, CMD);
+	while (time_before(jiffies, timeout) && (reg & R7PLUST_CMD_BUSY)) {
 		mdelay(1);
-		reg = hermes_read_regn(hw, CMD);
+		reg = r7plust_read_regn(hw, CMD);
 	}
 
 	/* Still busy? */
-	if (reg & HERMES_CMD_BUSY) {
+	if (reg & R7PLUST_CMD_BUSY) {
 		printk(KERN_ERR PFX "Busy timeout\n");
 		return -ETIMEDOUT;
 	}
@@ -116,7 +116,7 @@ static int orinoco_pci_init_one(struct pci_dev *pdev,
 	int err;
 	struct orinoco_private *priv;
 	struct orinoco_pci_card *card;
-	void __iomem *hermes_io;
+	void __iomem *r7plust_io;
 
 	err = pci_enable_device(pdev);
 	if (err) {
@@ -130,11 +130,11 @@ static int orinoco_pci_init_one(struct pci_dev *pdev,
 		goto fail_resources;
 	}
 
-	hermes_io = pci_iomap(pdev, 0, 0);
-	if (!hermes_io) {
+	r7plust_io = pci_iomap(pdev, 0, 0);
+	if (!r7plust_io) {
 		printk(KERN_ERR PFX "Cannot remap chipset registers\n");
 		err = -EIO;
-		goto fail_map_hermes;
+		goto fail_map_r7plust;
 	}
 
 	/* Allocate network device */
@@ -148,7 +148,7 @@ static int orinoco_pci_init_one(struct pci_dev *pdev,
 
 	card = priv->card;
 
-	hermes_struct_init(&priv->hw, hermes_io, HERMES_32BIT_REGSPACING);
+	r7plust_struct_init(&priv->hw, r7plust_io, R7PLUST_32BIT_REGSPACING);
 
 	err = request_irq(pdev->irq, orinoco_interrupt, IRQF_SHARED,
 			  DRIVER_NAME, priv);
@@ -188,9 +188,9 @@ static int orinoco_pci_init_one(struct pci_dev *pdev,
 	free_orinocodev(priv);
 
  fail_alloc:
-	pci_iounmap(pdev, hermes_io);
+	pci_iounmap(pdev, r7plust_io);
 
- fail_map_hermes:
+ fail_map_r7plust:
 	pci_release_regions(pdev);
 
  fail_resources:
@@ -235,10 +235,10 @@ static struct pci_driver orinoco_pci_driver = {
 
 static char version[] __initdata = DRIVER_NAME " " DRIVER_VERSION
 	" (Pavel Roskin <proski@gnu.org>,"
-	" David Gibson <hermes@gibson.dropbear.id.au> &"
+	" David Gibson <r7plust@gibson.dropbear.id.au> &"
 	" Jean Tourrilhes <jt@hpl.hp.com>)";
 MODULE_AUTHOR("Pavel Roskin <proski@gnu.org> &"
-	      " David Gibson <hermes@gibson.dropbear.id.au>");
+	      " David Gibson <r7plust@gibson.dropbear.id.au>");
 MODULE_DESCRIPTION("Driver for wireless LAN cards using direct PCI interface");
 MODULE_LICENSE("Dual MPL/GPL");
 

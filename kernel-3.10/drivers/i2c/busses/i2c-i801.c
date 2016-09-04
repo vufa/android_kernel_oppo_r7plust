@@ -871,7 +871,7 @@ struct dmi_onboard_device_info {
 
 static const struct dmi_onboard_device_info dmi_devices[] = {
 	{ "Syleus", DMI_DEV_TYPE_OTHER, 0x73, "fscsyl" },
-	{ "Hermes", DMI_DEV_TYPE_OTHER, 0x73, "fscher" },
+	{ "R7plust", DMI_DEV_TYPE_OTHER, 0x73, "fscher" },
 	{ "Hades",  DMI_DEV_TYPE_OTHER, 0x73, "fschds" },
 };
 

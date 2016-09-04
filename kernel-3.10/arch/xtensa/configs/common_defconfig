@@ -345,10 +345,10 @@ CONFIG_STRIP=m
 #
 # Wireless 802.11b ISA/PCI cards support
 #
-CONFIG_HERMES=m
-# CONFIG_PLX_HERMES is not set
-# CONFIG_TMD_HERMES is not set
-# CONFIG_PCI_HERMES is not set
+CONFIG_R7PLUST=m
+# CONFIG_PLX_R7PLUST is not set
+# CONFIG_TMD_R7PLUST is not set
+# CONFIG_PCI_R7PLUST is not set
 # CONFIG_ATMEL is not set
 
 #

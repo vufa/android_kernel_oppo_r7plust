@@ -3,10 +3,6 @@
  * Driver for Prism II devices which would usually be driven by orinoco_cs,
  * but are connected to the PCI bus by a PLX9052.
  *
- * Current maintainers are:
- *	Pavel Roskin <proski AT gnu.org>
- * and	David Gibson <hermes AT gibson.dropbear.id.au>
- *
  * (C) Copyright David Gibson, IBM Corp. 2001-2003.
  * Copyright (C) 2001 Daniel Barlow
  *
@@ -109,7 +105,7 @@
  */
 static int orinoco_plx_cor_reset(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	struct orinoco_pci_card *card = priv->card;
 	unsigned long timeout;
 	u16 reg;
@@ -122,14 +118,14 @@ static int orinoco_plx_cor_reset(struct orinoco_private *priv)
 
 	/* Just in case, wait more until the card is no longer busy */
 	timeout = jiffies + (PLX_RESET_TIME * HZ / 1000);
-	reg = hermes_read_regn(hw, CMD);
-	while (time_before(jiffies, timeout) && (reg & HERMES_CMD_BUSY)) {
+	reg = r7plust_read_regn(hw, CMD);
+	while (time_before(jiffies, timeout) && (reg & R7PLUST_CMD_BUSY)) {
 		mdelay(1);
-		reg = hermes_read_regn(hw, CMD);
+		reg = r7plust_read_regn(hw, CMD);
 	}
 
 	/* Still busy? */
-	if (reg & HERMES_CMD_BUSY) {
+	if (reg & R7PLUST_CMD_BUSY) {
 		printk(KERN_ERR PFX "Busy timeout\n");
 		return -ETIMEDOUT;
 	}
@@ -183,7 +179,7 @@ static int orinoco_plx_init_one(struct pci_dev *pdev,
 	int err;
 	struct orinoco_private *priv;
 	struct orinoco_pci_card *card;
-	void __iomem *hermes_io, *attr_io, *bridge_io;
+	void __iomem *r7plust_io, *attr_io, *bridge_io;
 
 	err = pci_enable_device(pdev);
 	if (err) {
@@ -211,11 +207,11 @@ static int orinoco_plx_init_one(struct pci_dev *pdev,
 		goto fail_map_attr;
 	}
 
-	hermes_io = pci_iomap(pdev, 3, 0);
-	if (!hermes_io) {
+	r7plust_io = pci_iomap(pdev, 3, 0);
+	if (!r7plust_io) {
 		printk(KERN_ERR PFX "Cannot map chipset registers\n");
 		err = -EIO;
-		goto fail_map_hermes;
+		goto fail_map_r7plust;
 	}
 
 	/* Allocate network device */
@@ -231,7 +227,7 @@ static int orinoco_plx_init_one(struct pci_dev *pdev,
 	card->bridge_io = bridge_io;
 	card->attr_io = attr_io;
 
-	hermes_struct_init(&priv->hw, hermes_io, HERMES_16BIT_REGSPACING);
+	r7plust_struct_init(&priv->hw, r7plust_io, R7PLUST_16BIT_REGSPACING);
 
 	err = request_irq(pdev->irq, orinoco_interrupt, IRQF_SHARED,
 			  DRIVER_NAME, priv);
@@ -277,9 +273,9 @@ static int orinoco_plx_init_one(struct pci_dev *pdev,
 	free_orinocodev(priv);
 
  fail_alloc:
-	pci_iounmap(pdev, hermes_io);
+	pci_iounmap(pdev, r7plust_io);
 
- fail_map_hermes:
+ fail_map_r7plust:
 	pci_iounmap(pdev, attr_io);
 
  fail_map_attr:
@@ -341,7 +337,7 @@ static struct pci_driver orinoco_plx_driver = {
 
 static char version[] __initdata = DRIVER_NAME " " DRIVER_VERSION
 	" (Pavel Roskin <proski@gnu.org>,"
-	" David Gibson <hermes@gibson.dropbear.id.au>,"
+	" David Gibson <r7plust@gibson.dropbear.id.au>,"
 	" Daniel Barlow <dan@telent.net>)";
 MODULE_AUTHOR("Daniel Barlow <dan@telent.net>");
 MODULE_DESCRIPTION("Driver for wireless LAN cards using the PLX9052 PCI bridge");

@@ -1,4 +1,4 @@
-/* sound/soc/samsung/s3c24xx_simtec_hermes.c
+/* sound/soc/samsung/s3c24xx_simtec_r7plust.c
  *
  * Copyright 2009 Simtec Electronics
  *
@@ -55,13 +55,13 @@ static const struct snd_soc_dapm_route base_map[] = {
 };
 
 /**
- * simtec_hermes_init - initialise and add controls
+ * simtec_r7plust_init - initialise and add controls
  * @codec; The codec instance to attach to.
  *
  * Attach our controls and configure the necessary codec
  * mappings for our sound card instance.
 */
-static int simtec_hermes_init(struct snd_soc_pcm_runtime *rtd)
+static int simtec_r7plust_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
@@ -83,12 +83,12 @@ static struct snd_soc_dai_link simtec_dai_aic33 = {
 	.cpu_dai_name	= "s3c24xx-iis",
 	.codec_dai_name = "tlv320aic3x-hifi",
 	.platform_name	= "s3c24xx-iis",
-	.init		= simtec_hermes_init,
+	.init		= simtec_r7plust_init,
 };
 
 /* simtec audio machine driver */
 static struct snd_soc_card snd_soc_machine_simtec_aic33 = {
-	.name		= "Simtec-Hermes",
+	.name		= "Simtec-R7plust",
 	.owner		= THIS_MODULE,
 	.dai_link	= &simtec_dai_aic33,
 	.num_links	= 1,
@@ -99,25 +99,25 @@ static struct snd_soc_card snd_soc_machine_simtec_aic33 = {
 	.num_dapm_routes = ARRAY_SIZE(base_map),
 };
 
-static int simtec_audio_hermes_probe(struct platform_device *pd)
+static int simtec_audio_r7plust_probe(struct platform_device *pd)
 {
 	dev_info(&pd->dev, "probing....\n");
 	return simtec_audio_core_probe(pd, &snd_soc_machine_simtec_aic33);
 }
 
-static struct platform_driver simtec_audio_hermes_platdrv = {
+static struct platform_driver simtec_audio_r7plust_platdrv = {
 	.driver	= {
 		.owner	= THIS_MODULE,
-		.name	= "s3c24xx-simtec-hermes-snd",
+		.name	= "s3c24xx-simtec-r7plust-snd",
 		.pm	= simtec_audio_pm,
 	},
-	.probe	= simtec_audio_hermes_probe,
+	.probe	= simtec_audio_r7plust_probe,
 	.remove	= simtec_audio_remove,
 };
 
-module_platform_driver(simtec_audio_hermes_platdrv);
+module_platform_driver(simtec_audio_r7plust_platdrv);
 
-MODULE_ALIAS("platform:s3c24xx-simtec-hermes-snd");
+MODULE_ALIAS("platform:s3c24xx-simtec-r7plust-snd");
 MODULE_AUTHOR("Ben Dooks <ben@simtec.co.uk>");
 MODULE_DESCRIPTION("ALSA SoC Simtec Audio support");
 MODULE_LICENSE("GPL");

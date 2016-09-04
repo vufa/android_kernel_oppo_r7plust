@@ -1,6 +1,6 @@
-/* hermes.c
+/* r7plust.c
  *
- * Driver core for the "Hermes" wireless MAC controller, as used in
+ * Driver core for the "R7plust" wireless MAC controller, as used in
  * the Lucent Orinoco and Cabletron RoamAbout cards. It should also
  * work on the hfa3841 and hfa3842 MAC controller chips used in the
  * Prism II chipsets.
@@ -43,7 +43,7 @@
 #include <linux/init.h>
 #include <linux/delay.h>
 
-#include "hermes.h"
+#include "r7plust.h"
 
 /* These are maximum timeouts. Most often, card wil react much faster */
 #define CMD_BUSY_TIMEOUT (100) /* In iterations of ~1us */
@@ -53,44 +53,44 @@
 
 /*
  * AUX port access.  To unlock the AUX port write the access keys to the
- * PARAM0-2 registers, then write HERMES_AUX_ENABLE to the HERMES_CONTROL
- * register.  Then read it and make sure it's HERMES_AUX_ENABLED.
+ * PARAM0-2 registers, then write R7PLUST_AUX_ENABLE to the R7PLUST_CONTROL
+ * register.  Then read it and make sure it's R7PLUST_AUX_ENABLED.
  */
-#define HERMES_AUX_ENABLE	0x8000	/* Enable auxiliary port access */
-#define HERMES_AUX_DISABLE	0x4000	/* Disable to auxiliary port access */
-#define HERMES_AUX_ENABLED	0xC000	/* Auxiliary port is open */
-#define HERMES_AUX_DISABLED	0x0000	/* Auxiliary port is closed */
+#define R7PLUST_AUX_ENABLE	0x8000	/* Enable auxiliary port access */
+#define R7PLUST_AUX_DISABLE	0x4000	/* Disable to auxiliary port access */
+#define R7PLUST_AUX_ENABLED	0xC000	/* Auxiliary port is open */
+#define R7PLUST_AUX_DISABLED	0x0000	/* Auxiliary port is closed */
 
-#define HERMES_AUX_PW0	0xFE01
-#define HERMES_AUX_PW1	0xDC23
-#define HERMES_AUX_PW2	0xBA45
+#define R7PLUST_AUX_PW0	0xFE01
+#define R7PLUST_AUX_PW1	0xDC23
+#define R7PLUST_AUX_PW2	0xBA45
 
-/* HERMES_CMD_DOWNLD */
-#define HERMES_PROGRAM_DISABLE             (0x0000 | HERMES_CMD_DOWNLD)
-#define HERMES_PROGRAM_ENABLE_VOLATILE     (0x0100 | HERMES_CMD_DOWNLD)
-#define HERMES_PROGRAM_ENABLE_NON_VOLATILE (0x0200 | HERMES_CMD_DOWNLD)
-#define HERMES_PROGRAM_NON_VOLATILE        (0x0300 | HERMES_CMD_DOWNLD)
+/* R7PLUST_CMD_DOWNLD */
+#define R7PLUST_PROGRAM_DISABLE             (0x0000 | R7PLUST_CMD_DOWNLD)
+#define R7PLUST_PROGRAM_ENABLE_VOLATILE     (0x0100 | R7PLUST_CMD_DOWNLD)
+#define R7PLUST_PROGRAM_ENABLE_NON_VOLATILE (0x0200 | R7PLUST_CMD_DOWNLD)
+#define R7PLUST_PROGRAM_NON_VOLATILE        (0x0300 | R7PLUST_CMD_DOWNLD)
 
 /*
  * Debugging helpers
  */
 
-#define DMSG(stuff...) do {printk(KERN_DEBUG "hermes @ %p: " , hw->iobase); \
+#define DMSG(stuff...) do {printk(KERN_DEBUG "r7plust @ %p: " , hw->iobase); \
 			printk(stuff); } while (0)
 
-#undef HERMES_DEBUG
-#ifdef HERMES_DEBUG
+#undef R7PLUST_DEBUG
+#ifdef R7PLUST_DEBUG
 #include <stdarg.h>
 
-#define DEBUG(lvl, stuff...) if ((lvl) <= HERMES_DEBUG) DMSG(stuff)
+#define DEBUG(lvl, stuff...) if ((lvl) <= R7PLUST_DEBUG) DMSG(stuff)
 
-#else /* ! HERMES_DEBUG */
+#else /* ! R7PLUST_DEBUG */
 
 #define DEBUG(lvl, stuff...) do { } while (0)
 
-#endif /* ! HERMES_DEBUG */
+#endif /* ! R7PLUST_DEBUG */
 
-static const struct hermes_ops hermes_ops_local;
+static const struct r7plust_ops r7plust_ops_local;
 
 /*
  * Internal functions
@@ -103,26 +103,26 @@ static const struct hermes_ops hermes_ops_local;
 
    Callable from any context.
 */
-static int hermes_issue_cmd(struct hermes *hw, u16 cmd, u16 param0,
+static int r7plust_issue_cmd(struct r7plust *hw, u16 cmd, u16 param0,
 			    u16 param1, u16 param2)
 {
 	int k = CMD_BUSY_TIMEOUT;
 	u16 reg;
 
 	/* First wait for the command register to unbusy */
-	reg = hermes_read_regn(hw, CMD);
-	while ((reg & HERMES_CMD_BUSY) && k) {
+	reg = r7plust_read_regn(hw, CMD);
+	while ((reg & R7PLUST_CMD_BUSY) && k) {
 		k--;
 		udelay(1);
-		reg = hermes_read_regn(hw, CMD);
+		reg = r7plust_read_regn(hw, CMD);
 	}
-	if (reg & HERMES_CMD_BUSY)
+	if (reg & R7PLUST_CMD_BUSY)
 		return -EBUSY;
 
-	hermes_write_regn(hw, PARAM2, param2);
-	hermes_write_regn(hw, PARAM1, param1);
-	hermes_write_regn(hw, PARAM0, param0);
-	hermes_write_regn(hw, CMD, cmd);
+	r7plust_write_regn(hw, PARAM2, param2);
+	r7plust_write_regn(hw, PARAM1, param1);
+	r7plust_write_regn(hw, PARAM0, param0);
+	r7plust_write_regn(hw, CMD, cmd);
 
 	return 0;
 }
@@ -132,71 +132,71 @@ static int hermes_issue_cmd(struct hermes *hw, u16 cmd, u16 param0,
  */
 
 /* For doing cmds that wipe the magic constant in SWSUPPORT0 */
-static int hermes_doicmd_wait(struct hermes *hw, u16 cmd,
+static int r7plust_doicmd_wait(struct r7plust *hw, u16 cmd,
 			      u16 parm0, u16 parm1, u16 parm2,
-			      struct hermes_response *resp)
+			      struct r7plust_response *resp)
 {
 	int err = 0;
 	int k;
 	u16 status, reg;
 
-	err = hermes_issue_cmd(hw, cmd, parm0, parm1, parm2);
+	err = r7plust_issue_cmd(hw, cmd, parm0, parm1, parm2);
 	if (err)
 		return err;
 
-	reg = hermes_read_regn(hw, EVSTAT);
+	reg = r7plust_read_regn(hw, EVSTAT);
 	k = CMD_INIT_TIMEOUT;
-	while ((!(reg & HERMES_EV_CMD)) && k) {
+	while ((!(reg & R7PLUST_EV_CMD)) && k) {
 		k--;
 		udelay(10);
-		reg = hermes_read_regn(hw, EVSTAT);
+		reg = r7plust_read_regn(hw, EVSTAT);
 	}
 
-	hermes_write_regn(hw, SWSUPPORT0, HERMES_MAGIC);
+	r7plust_write_regn(hw, SWSUPPORT0, R7PLUST_MAGIC);
 
-	if (!hermes_present(hw)) {
-		DEBUG(0, "hermes @ 0x%x: Card removed during reset.\n",
+	if (!r7plust_present(hw)) {
+		DEBUG(0, "r7plust @ 0x%x: Card removed during reset.\n",
 		       hw->iobase);
 		err = -ENODEV;
 		goto out;
 	}
 
-	if (!(reg & HERMES_EV_CMD)) {
-		printk(KERN_ERR "hermes @ %p: "
+	if (!(reg & R7PLUST_EV_CMD)) {
+		printk(KERN_ERR "r7plust @ %p: "
 		       "Timeout waiting for card to reset (reg=0x%04x)!\n",
 		       hw->iobase, reg);
 		err = -ETIMEDOUT;
 		goto out;
 	}
 
-	status = hermes_read_regn(hw, STATUS);
+	status = r7plust_read_regn(hw, STATUS);
 	if (resp) {
 		resp->status = status;
-		resp->resp0 = hermes_read_regn(hw, RESP0);
-		resp->resp1 = hermes_read_regn(hw, RESP1);
-		resp->resp2 = hermes_read_regn(hw, RESP2);
+		resp->resp0 = r7plust_read_regn(hw, RESP0);
+		resp->resp1 = r7plust_read_regn(hw, RESP1);
+		resp->resp2 = r7plust_read_regn(hw, RESP2);
 	}
 
-	hermes_write_regn(hw, EVACK, HERMES_EV_CMD);
+	r7plust_write_regn(hw, EVACK, R7PLUST_EV_CMD);
 
-	if (status & HERMES_STATUS_RESULT)
+	if (status & R7PLUST_STATUS_RESULT)
 		err = -EIO;
 out:
 	return err;
 }
 
-void hermes_struct_init(struct hermes *hw, void __iomem *address,
+void r7plust_struct_init(struct r7plust *hw, void __iomem *address,
 			int reg_spacing)
 {
 	hw->iobase = address;
 	hw->reg_spacing = reg_spacing;
 	hw->inten = 0x0;
 	hw->eeprom_pda = false;
-	hw->ops = &hermes_ops_local;
+	hw->ops = &r7plust_ops_local;
 }
-EXPORT_SYMBOL(hermes_struct_init);
+EXPORT_SYMBOL(r7plust_struct_init);
 
-static int hermes_init(struct hermes *hw)
+static int r7plust_init(struct r7plust *hw)
 {
 	u16 reg;
 	int err = 0;
@@ -204,8 +204,8 @@ static int hermes_init(struct hermes *hw)
 
 	/* We don't want to be interrupted while resetting the chipset */
 	hw->inten = 0x0;
-	hermes_write_regn(hw, INTEN, 0);
-	hermes_write_regn(hw, EVACK, 0xffff);
+	r7plust_write_regn(hw, INTEN, 0);
+	r7plust_write_regn(hw, EVACK, 0xffff);
 
 	/* Normally it's a "can't happen" for the command register to
 	   be busy when we go to issue a command because we are
@@ -214,29 +214,29 @@ static int hermes_init(struct hermes *hw)
 	   state, so we actually wait to see if the command register
 	   will unbusy itself here. */
 	k = CMD_BUSY_TIMEOUT;
-	reg = hermes_read_regn(hw, CMD);
-	while (k && (reg & HERMES_CMD_BUSY)) {
+	reg = r7plust_read_regn(hw, CMD);
+	while (k && (reg & R7PLUST_CMD_BUSY)) {
 		if (reg == 0xffff) /* Special case - the card has probably been
 				      removed, so don't wait for the timeout */
 			return -ENODEV;
 
 		k--;
 		udelay(1);
-		reg = hermes_read_regn(hw, CMD);
+		reg = r7plust_read_regn(hw, CMD);
 	}
 
 	/* No need to explicitly handle the timeout - if we've timed
-	   out hermes_issue_cmd() will probably return -EBUSY below */
+	   out r7plust_issue_cmd() will probably return -EBUSY below */
 
 	/* According to the documentation, EVSTAT may contain
 	   obsolete event occurrence information.  We have to acknowledge
 	   it by writing EVACK. */
-	reg = hermes_read_regn(hw, EVSTAT);
-	hermes_write_regn(hw, EVACK, reg);
+	reg = r7plust_read_regn(hw, EVSTAT);
+	r7plust_write_regn(hw, EVACK, reg);
 
-	/* We don't use hermes_docmd_wait here, because the reset wipes
+	/* We don't use r7plust_docmd_wait here, because the reset wipes
 	   the magic constant in SWSUPPORT0 away, and it gets confused */
-	err = hermes_doicmd_wait(hw, HERMES_CMD_INIT, 0, 0, 0, NULL);
+	err = r7plust_doicmd_wait(hw, R7PLUST_CMD_INIT, 0, 0, 0, NULL);
 
 	return err;
 }
@@ -250,107 +250,107 @@ static int hermes_init(struct hermes *hw)
  *     > 0 on error returned by the firmware
  *
  * Callable from any context, but locking is your problem. */
-static int hermes_docmd_wait(struct hermes *hw, u16 cmd, u16 parm0,
-			     struct hermes_response *resp)
+static int r7plust_docmd_wait(struct r7plust *hw, u16 cmd, u16 parm0,
+			     struct r7plust_response *resp)
 {
 	int err;
 	int k;
 	u16 reg;
 	u16 status;
 
-	err = hermes_issue_cmd(hw, cmd, parm0, 0, 0);
+	err = r7plust_issue_cmd(hw, cmd, parm0, 0, 0);
 	if (err) {
-		if (!hermes_present(hw)) {
+		if (!r7plust_present(hw)) {
 			if (net_ratelimit())
-				printk(KERN_WARNING "hermes @ %p: "
+				printk(KERN_WARNING "r7plust @ %p: "
 				       "Card removed while issuing command "
 				       "0x%04x.\n", hw->iobase, cmd);
 			err = -ENODEV;
 		} else
 			if (net_ratelimit())
-				printk(KERN_ERR "hermes @ %p: "
+				printk(KERN_ERR "r7plust @ %p: "
 				       "Error %d issuing command 0x%04x.\n",
 				       hw->iobase, err, cmd);
 		goto out;
 	}
 
-	reg = hermes_read_regn(hw, EVSTAT);
+	reg = r7plust_read_regn(hw, EVSTAT);
 	k = CMD_COMPL_TIMEOUT;
-	while ((!(reg & HERMES_EV_CMD)) && k) {
+	while ((!(reg & R7PLUST_EV_CMD)) && k) {
 		k--;
 		udelay(10);
-		reg = hermes_read_regn(hw, EVSTAT);
+		reg = r7plust_read_regn(hw, EVSTAT);
 	}
 
-	if (!hermes_present(hw)) {
-		printk(KERN_WARNING "hermes @ %p: Card removed "
+	if (!r7plust_present(hw)) {
+		printk(KERN_WARNING "r7plust @ %p: Card removed "
 		       "while waiting for command 0x%04x completion.\n",
 		       hw->iobase, cmd);
 		err = -ENODEV;
 		goto out;
 	}
 
-	if (!(reg & HERMES_EV_CMD)) {
-		printk(KERN_ERR "hermes @ %p: Timeout waiting for "
+	if (!(reg & R7PLUST_EV_CMD)) {
+		printk(KERN_ERR "r7plust @ %p: Timeout waiting for "
 		       "command 0x%04x completion.\n", hw->iobase, cmd);
 		err = -ETIMEDOUT;
 		goto out;
 	}
 
-	status = hermes_read_regn(hw, STATUS);
+	status = r7plust_read_regn(hw, STATUS);
 	if (resp) {
 		resp->status = status;
-		resp->resp0 = hermes_read_regn(hw, RESP0);
-		resp->resp1 = hermes_read_regn(hw, RESP1);
-		resp->resp2 = hermes_read_regn(hw, RESP2);
+		resp->resp0 = r7plust_read_regn(hw, RESP0);
+		resp->resp1 = r7plust_read_regn(hw, RESP1);
+		resp->resp2 = r7plust_read_regn(hw, RESP2);
 	}
 
-	hermes_write_regn(hw, EVACK, HERMES_EV_CMD);
+	r7plust_write_regn(hw, EVACK, R7PLUST_EV_CMD);
 
-	if (status & HERMES_STATUS_RESULT)
+	if (status & R7PLUST_STATUS_RESULT)
 		err = -EIO;
 
  out:
 	return err;
 }
 
-static int hermes_allocate(struct hermes *hw, u16 size, u16 *fid)
+static int r7plust_allocate(struct r7plust *hw, u16 size, u16 *fid)
 {
 	int err = 0;
 	int k;
 	u16 reg;
 
-	if ((size < HERMES_ALLOC_LEN_MIN) || (size > HERMES_ALLOC_LEN_MAX))
+	if ((size < R7PLUST_ALLOC_LEN_MIN) || (size > R7PLUST_ALLOC_LEN_MAX))
 		return -EINVAL;
 
-	err = hermes_docmd_wait(hw, HERMES_CMD_ALLOC, size, NULL);
+	err = r7plust_docmd_wait(hw, R7PLUST_CMD_ALLOC, size, NULL);
 	if (err)
 		return err;
 
-	reg = hermes_read_regn(hw, EVSTAT);
+	reg = r7plust_read_regn(hw, EVSTAT);
 	k = ALLOC_COMPL_TIMEOUT;
-	while ((!(reg & HERMES_EV_ALLOC)) && k) {
+	while ((!(reg & R7PLUST_EV_ALLOC)) && k) {
 		k--;
 		udelay(10);
-		reg = hermes_read_regn(hw, EVSTAT);
+		reg = r7plust_read_regn(hw, EVSTAT);
 	}
 
-	if (!hermes_present(hw)) {
-		printk(KERN_WARNING "hermes @ %p: "
+	if (!r7plust_present(hw)) {
+		printk(KERN_WARNING "r7plust @ %p: "
 		       "Card removed waiting for frame allocation.\n",
 		       hw->iobase);
 		return -ENODEV;
 	}
 
-	if (!(reg & HERMES_EV_ALLOC)) {
-		printk(KERN_ERR "hermes @ %p: "
+	if (!(reg & R7PLUST_EV_ALLOC)) {
+		printk(KERN_ERR "r7plust @ %p: "
 		       "Timeout waiting for frame allocation\n",
 		       hw->iobase);
 		return -ETIMEDOUT;
 	}
 
-	*fid = hermes_read_regn(hw, ALLOCFID);
-	hermes_write_regn(hw, EVACK, HERMES_EV_ALLOC);
+	*fid = r7plust_read_regn(hw, ALLOCFID);
+	r7plust_write_regn(hw, EVACK, R7PLUST_EV_ALLOC);
 
 	return 0;
 }
@@ -364,48 +364,48 @@ static int hermes_allocate(struct hermes *hw, u16 size, u16 *fid)
  * from firmware
  *
  * Callable from any context */
-static int hermes_bap_seek(struct hermes *hw, int bap, u16 id, u16 offset)
+static int r7plust_bap_seek(struct r7plust *hw, int bap, u16 id, u16 offset)
 {
-	int sreg = bap ? HERMES_SELECT1 : HERMES_SELECT0;
-	int oreg = bap ? HERMES_OFFSET1 : HERMES_OFFSET0;
+	int sreg = bap ? R7PLUST_SELECT1 : R7PLUST_SELECT0;
+	int oreg = bap ? R7PLUST_OFFSET1 : R7PLUST_OFFSET0;
 	int k;
 	u16 reg;
 
 	/* Paranoia.. */
-	if ((offset > HERMES_BAP_OFFSET_MAX) || (offset % 2))
+	if ((offset > R7PLUST_BAP_OFFSET_MAX) || (offset % 2))
 		return -EINVAL;
 
-	k = HERMES_BAP_BUSY_TIMEOUT;
-	reg = hermes_read_reg(hw, oreg);
-	while ((reg & HERMES_OFFSET_BUSY) && k) {
+	k = R7PLUST_BAP_BUSY_TIMEOUT;
+	reg = r7plust_read_reg(hw, oreg);
+	while ((reg & R7PLUST_OFFSET_BUSY) && k) {
 		k--;
 		udelay(1);
-		reg = hermes_read_reg(hw, oreg);
+		reg = r7plust_read_reg(hw, oreg);
 	}
 
-	if (reg & HERMES_OFFSET_BUSY)
+	if (reg & R7PLUST_OFFSET_BUSY)
 		return -ETIMEDOUT;
 
 	/* Now we actually set up the transfer */
-	hermes_write_reg(hw, sreg, id);
-	hermes_write_reg(hw, oreg, offset);
+	r7plust_write_reg(hw, sreg, id);
+	r7plust_write_reg(hw, oreg, offset);
 
 	/* Wait for the BAP to be ready */
-	k = HERMES_BAP_BUSY_TIMEOUT;
-	reg = hermes_read_reg(hw, oreg);
-	while ((reg & (HERMES_OFFSET_BUSY | HERMES_OFFSET_ERR)) && k) {
+	k = R7PLUST_BAP_BUSY_TIMEOUT;
+	reg = r7plust_read_reg(hw, oreg);
+	while ((reg & (R7PLUST_OFFSET_BUSY | R7PLUST_OFFSET_ERR)) && k) {
 		k--;
 		udelay(1);
-		reg = hermes_read_reg(hw, oreg);
+		reg = r7plust_read_reg(hw, oreg);
 	}
 
 	if (reg != offset) {
-		printk(KERN_ERR "hermes @ %p: BAP%d offset %s: "
+		printk(KERN_ERR "r7plust @ %p: BAP%d offset %s: "
 		       "reg=0x%x id=0x%x offset=0x%x\n", hw->iobase, bap,
-		       (reg & HERMES_OFFSET_BUSY) ? "timeout" : "error",
+		       (reg & R7PLUST_OFFSET_BUSY) ? "timeout" : "error",
 		       reg, id, offset);
 
-		if (reg & HERMES_OFFSET_BUSY)
+		if (reg & R7PLUST_OFFSET_BUSY)
 			return -ETIMEDOUT;
 
 		return -EIO;		/* error or wrong offset */
@@ -423,21 +423,21 @@ static int hermes_bap_seek(struct hermes *hw, int bap, u16 id, u16 offset)
  *       0 on success
  *     > 0 on error from firmware
  */
-static int hermes_bap_pread(struct hermes *hw, int bap, void *buf, int len,
+static int r7plust_bap_pread(struct r7plust *hw, int bap, void *buf, int len,
 			    u16 id, u16 offset)
 {
-	int dreg = bap ? HERMES_DATA1 : HERMES_DATA0;
+	int dreg = bap ? R7PLUST_DATA1 : R7PLUST_DATA0;
 	int err = 0;
 
 	if ((len < 0) || (len % 2))
 		return -EINVAL;
 
-	err = hermes_bap_seek(hw, bap, id, offset);
+	err = r7plust_bap_seek(hw, bap, id, offset);
 	if (err)
 		goto out;
 
 	/* Actually do the transfer */
-	hermes_read_words(hw, dreg, buf, len / 2);
+	r7plust_read_words(hw, dreg, buf, len / 2);
 
  out:
 	return err;
@@ -451,21 +451,21 @@ static int hermes_bap_pread(struct hermes *hw, int bap, void *buf, int len,
  *       0 on success
  *     > 0 on error from firmware
  */
-static int hermes_bap_pwrite(struct hermes *hw, int bap, const void *buf,
+static int r7plust_bap_pwrite(struct r7plust *hw, int bap, const void *buf,
 			     int len, u16 id, u16 offset)
 {
-	int dreg = bap ? HERMES_DATA1 : HERMES_DATA0;
+	int dreg = bap ? R7PLUST_DATA1 : R7PLUST_DATA0;
 	int err = 0;
 
 	if (len < 0)
 		return -EINVAL;
 
-	err = hermes_bap_seek(hw, bap, id, offset);
+	err = r7plust_bap_seek(hw, bap, id, offset);
 	if (err)
 		goto out;
 
 	/* Actually do the transfer */
-	hermes_write_bytes(hw, dreg, buf, len);
+	r7plust_write_bytes(hw, dreg, buf, len);
 
  out:
 	return err;
@@ -479,106 +479,106 @@ static int hermes_bap_pwrite(struct hermes *hw, int bap, const void *buf,
  * practice.
  *
  * Callable from user or bh context.  */
-static int hermes_read_ltv(struct hermes *hw, int bap, u16 rid,
+static int r7plust_read_ltv(struct r7plust *hw, int bap, u16 rid,
 			   unsigned bufsize, u16 *length, void *buf)
 {
 	int err = 0;
-	int dreg = bap ? HERMES_DATA1 : HERMES_DATA0;
+	int dreg = bap ? R7PLUST_DATA1 : R7PLUST_DATA0;
 	u16 rlength, rtype;
 	unsigned nwords;
 
 	if (bufsize % 2)
 		return -EINVAL;
 
-	err = hermes_docmd_wait(hw, HERMES_CMD_ACCESS, rid, NULL);
+	err = r7plust_docmd_wait(hw, R7PLUST_CMD_ACCESS, rid, NULL);
 	if (err)
 		return err;
 
-	err = hermes_bap_seek(hw, bap, rid, 0);
+	err = r7plust_bap_seek(hw, bap, rid, 0);
 	if (err)
 		return err;
 
-	rlength = hermes_read_reg(hw, dreg);
+	rlength = r7plust_read_reg(hw, dreg);
 
 	if (!rlength)
 		return -ENODATA;
 
-	rtype = hermes_read_reg(hw, dreg);
+	rtype = r7plust_read_reg(hw, dreg);
 
 	if (length)
 		*length = rlength;
 
 	if (rtype != rid)
-		printk(KERN_WARNING "hermes @ %p: %s(): "
+		printk(KERN_WARNING "r7plust @ %p: %s(): "
 		       "rid (0x%04x) does not match type (0x%04x)\n",
 		       hw->iobase, __func__, rid, rtype);
-	if (HERMES_RECLEN_TO_BYTES(rlength) > bufsize)
-		printk(KERN_WARNING "hermes @ %p: "
+	if (R7PLUST_RECLEN_TO_BYTES(rlength) > bufsize)
+		printk(KERN_WARNING "r7plust @ %p: "
 		       "Truncating LTV record from %d to %d bytes. "
 		       "(rid=0x%04x, len=0x%04x)\n", hw->iobase,
-		       HERMES_RECLEN_TO_BYTES(rlength), bufsize, rid, rlength);
+		       R7PLUST_RECLEN_TO_BYTES(rlength), bufsize, rid, rlength);
 
 	nwords = min((unsigned)rlength - 1, bufsize / 2);
-	hermes_read_words(hw, dreg, buf, nwords);
+	r7plust_read_words(hw, dreg, buf, nwords);
 
 	return 0;
 }
 
-static int hermes_write_ltv(struct hermes *hw, int bap, u16 rid,
+static int r7plust_write_ltv(struct r7plust *hw, int bap, u16 rid,
 			    u16 length, const void *value)
 {
-	int dreg = bap ? HERMES_DATA1 : HERMES_DATA0;
+	int dreg = bap ? R7PLUST_DATA1 : R7PLUST_DATA0;
 	int err = 0;
 	unsigned count;
 
 	if (length == 0)
 		return -EINVAL;
 
-	err = hermes_bap_seek(hw, bap, rid, 0);
+	err = r7plust_bap_seek(hw, bap, rid, 0);
 	if (err)
 		return err;
 
-	hermes_write_reg(hw, dreg, length);
-	hermes_write_reg(hw, dreg, rid);
+	r7plust_write_reg(hw, dreg, length);
+	r7plust_write_reg(hw, dreg, rid);
 
 	count = length - 1;
 
-	hermes_write_bytes(hw, dreg, value, count << 1);
+	r7plust_write_bytes(hw, dreg, value, count << 1);
 
-	err = hermes_docmd_wait(hw, HERMES_CMD_ACCESS | HERMES_CMD_WRITE,
+	err = r7plust_docmd_wait(hw, R7PLUST_CMD_ACCESS | R7PLUST_CMD_WRITE,
 				rid, NULL);
 
 	return err;
 }
 
-/*** Hermes AUX control ***/
+/*** R7plust AUX control ***/
 
 static inline void
-hermes_aux_setaddr(struct hermes *hw, u32 addr)
+r7plust_aux_setaddr(struct r7plust *hw, u32 addr)
 {
-	hermes_write_reg(hw, HERMES_AUXPAGE, (u16) (addr >> 7));
-	hermes_write_reg(hw, HERMES_AUXOFFSET, (u16) (addr & 0x7F));
+	r7plust_write_reg(hw, R7PLUST_AUXPAGE, (u16) (addr >> 7));
+	r7plust_write_reg(hw, R7PLUST_AUXOFFSET, (u16) (addr & 0x7F));
 }
 
 static inline int
-hermes_aux_control(struct hermes *hw, int enabled)
+r7plust_aux_control(struct r7plust *hw, int enabled)
 {
-	int desired_state = enabled ? HERMES_AUX_ENABLED : HERMES_AUX_DISABLED;
-	int action = enabled ? HERMES_AUX_ENABLE : HERMES_AUX_DISABLE;
+	int desired_state = enabled ? R7PLUST_AUX_ENABLED : R7PLUST_AUX_DISABLED;
+	int action = enabled ? R7PLUST_AUX_ENABLE : R7PLUST_AUX_DISABLE;
 	int i;
 
 	/* Already open? */
-	if (hermes_read_reg(hw, HERMES_CONTROL) == desired_state)
+	if (r7plust_read_reg(hw, R7PLUST_CONTROL) == desired_state)
 		return 0;
 
-	hermes_write_reg(hw, HERMES_PARAM0, HERMES_AUX_PW0);
-	hermes_write_reg(hw, HERMES_PARAM1, HERMES_AUX_PW1);
-	hermes_write_reg(hw, HERMES_PARAM2, HERMES_AUX_PW2);
-	hermes_write_reg(hw, HERMES_CONTROL, action);
+	r7plust_write_reg(hw, R7PLUST_PARAM0, R7PLUST_AUX_PW0);
+	r7plust_write_reg(hw, R7PLUST_PARAM1, R7PLUST_AUX_PW1);
+	r7plust_write_reg(hw, R7PLUST_PARAM2, R7PLUST_AUX_PW2);
+	r7plust_write_reg(hw, R7PLUST_CONTROL, action);
 
 	for (i = 0; i < 20; i++) {
 		udelay(10);
-		if (hermes_read_reg(hw, HERMES_CONTROL) ==
+		if (r7plust_read_reg(hw, R7PLUST_CONTROL) ==
 		    desired_state)
 			return 0;
 	}
@@ -586,41 +586,41 @@ hermes_aux_control(struct hermes *hw, int enabled)
 	return -EBUSY;
 }
 
-/*** Hermes programming ***/
+/*** R7plust programming ***/
 
-/* About to start programming data (Hermes I)
+/* About to start programming data (R7plust I)
  * offset is the entry point
  *
  * Spectrum_cs' Symbol fw does not require this
  * wl_lkm Agere fw does
  * Don't know about intersil
  */
-static int hermesi_program_init(struct hermes *hw, u32 offset)
+static int r7plusti_program_init(struct r7plust *hw, u32 offset)
 {
 	int err;
 
 	/* Disable interrupts?*/
 	/*hw->inten = 0x0;*/
-	/*hermes_write_regn(hw, INTEN, 0);*/
-	/*hermes_set_irqmask(hw, 0);*/
+	/*r7plust_write_regn(hw, INTEN, 0);*/
+	/*r7plust_set_irqmask(hw, 0);*/
 
 	/* Acknowledge any outstanding command */
-	hermes_write_regn(hw, EVACK, 0xFFFF);
+	r7plust_write_regn(hw, EVACK, 0xFFFF);
 
 	/* Using init_cmd_wait rather than cmd_wait */
 	err = hw->ops->init_cmd_wait(hw,
-				     0x0100 | HERMES_CMD_INIT,
+				     0x0100 | R7PLUST_CMD_INIT,
 				     0, 0, 0, NULL);
 	if (err)
 		return err;
 
 	err = hw->ops->init_cmd_wait(hw,
-				     0x0000 | HERMES_CMD_INIT,
+				     0x0000 | R7PLUST_CMD_INIT,
 				     0, 0, 0, NULL);
 	if (err)
 		return err;
 
-	err = hermes_aux_control(hw, 1);
+	err = r7plust_aux_control(hw, 1);
 	pr_debug("AUX enable returned %d\n", err);
 
 	if (err)
@@ -628,7 +628,7 @@ static int hermesi_program_init(struct hermes *hw, u32 offset)
 
 	pr_debug("Enabling volatile, EP 0x%08x\n", offset);
 	err = hw->ops->init_cmd_wait(hw,
-				     HERMES_PROGRAM_ENABLE_VOLATILE,
+				     R7PLUST_PROGRAM_ENABLE_VOLATILE,
 				     offset & 0xFFFFu,
 				     offset >> 16,
 				     0,
@@ -638,54 +638,54 @@ static int hermesi_program_init(struct hermes *hw, u32 offset)
 	return err;
 }
 
-/* Done programming data (Hermes I)
+/* Done programming data (R7plust I)
  *
  * Spectrum_cs' Symbol fw does not require this
  * wl_lkm Agere fw does
  * Don't know about intersil
  */
-static int hermesi_program_end(struct hermes *hw)
+static int r7plusti_program_end(struct r7plust *hw)
 {
-	struct hermes_response resp;
+	struct r7plust_response resp;
 	int rc = 0;
 	int err;
 
-	rc = hw->ops->cmd_wait(hw, HERMES_PROGRAM_DISABLE, 0, &resp);
+	rc = hw->ops->cmd_wait(hw, R7PLUST_PROGRAM_DISABLE, 0, &resp);
 
 	pr_debug("PROGRAM_DISABLE returned %d, "
 		 "r0 0x%04x, r1 0x%04x, r2 0x%04x\n",
 		 rc, resp.resp0, resp.resp1, resp.resp2);
 
 	if ((rc == 0) &&
-	    ((resp.status & HERMES_STATUS_CMDCODE) != HERMES_CMD_DOWNLD))
+	    ((resp.status & R7PLUST_STATUS_CMDCODE) != R7PLUST_CMD_DOWNLD))
 		rc = -EIO;
 
-	err = hermes_aux_control(hw, 0);
+	err = r7plust_aux_control(hw, 0);
 	pr_debug("AUX disable returned %d\n", err);
 
 	/* Acknowledge any outstanding command */
-	hermes_write_regn(hw, EVACK, 0xFFFF);
+	r7plust_write_regn(hw, EVACK, 0xFFFF);
 
 	/* Reinitialise, ignoring return */
-	(void) hw->ops->init_cmd_wait(hw, 0x0000 | HERMES_CMD_INIT,
+	(void) hw->ops->init_cmd_wait(hw, 0x0000 | R7PLUST_CMD_INIT,
 				      0, 0, 0, NULL);
 
 	return rc ? rc : err;
 }
 
-static int hermes_program_bytes(struct hermes *hw, const char *data,
+static int r7plust_program_bytes(struct r7plust *hw, const char *data,
 				u32 addr, u32 len)
 {
 	/* wl lkm splits the programming into chunks of 2000 bytes.
 	 * This restriction appears to come from USB. The PCMCIA
 	 * adapters can program the whole lot in one go */
-	hermes_aux_setaddr(hw, addr);
-	hermes_write_bytes(hw, HERMES_AUXDATA, data, len);
+	r7plust_aux_setaddr(hw, addr);
+	r7plust_write_bytes(hw, R7PLUST_AUXDATA, data, len);
 	return 0;
 }
 
 /* Read PDA from the adapter */
-static int hermes_read_pda(struct hermes *hw, __le16 *pda, u32 pda_addr,
+static int r7plust_read_pda(struct r7plust *hw, __le16 *pda, u32 pda_addr,
 			   u16 pda_len)
 {
 	int ret;
@@ -697,7 +697,7 @@ static int hermes_read_pda(struct hermes *hw, __le16 *pda, u32 pda_addr,
 		/* PDA of spectrum symbol is in eeprom */
 
 		/* Issue command to read EEPROM */
-		ret = hw->ops->cmd_wait(hw, HERMES_CMD_READMIF, 0, NULL);
+		ret = hw->ops->cmd_wait(hw, R7PLUST_CMD_READMIF, 0, NULL);
 		if (ret)
 			return ret;
 	} else {
@@ -712,17 +712,17 @@ static int hermes_read_pda(struct hermes *hw, __le16 *pda, u32 pda_addr,
 	}
 
 	/* Open auxiliary port */
-	ret = hermes_aux_control(hw, 1);
+	ret = r7plust_aux_control(hw, 1);
 	pr_debug("AUX enable returned %d\n", ret);
 	if (ret)
 		return ret;
 
 	/* Read PDA */
-	hermes_aux_setaddr(hw, pda_addr);
-	hermes_read_words(hw, HERMES_AUXDATA, data, data_len / 2);
+	r7plust_aux_setaddr(hw, pda_addr);
+	r7plust_read_words(hw, R7PLUST_AUXDATA, data, data_len / 2);
 
 	/* Close aux port */
-	ret = hermes_aux_control(hw, 0);
+	ret = r7plust_aux_control(hw, 0);
 	pr_debug("AUX disable returned %d\n", ret);
 
 	/* Check PDA length */
@@ -735,44 +735,44 @@ static int hermes_read_pda(struct hermes *hw, __le16 *pda, u32 pda_addr,
 	return 0;
 }
 
-static void hermes_lock_irqsave(spinlock_t *lock,
+static void r7plust_lock_irqsave(spinlock_t *lock,
 				unsigned long *flags) __acquires(lock)
 {
 	spin_lock_irqsave(lock, *flags);
 }
 
-static void hermes_unlock_irqrestore(spinlock_t *lock,
+static void r7plust_unlock_irqrestore(spinlock_t *lock,
 				     unsigned long *flags) __releases(lock)
 {
 	spin_unlock_irqrestore(lock, *flags);
 }
 
-static void hermes_lock_irq(spinlock_t *lock) __acquires(lock)
+static void r7plust_lock_irq(spinlock_t *lock) __acquires(lock)
 {
 	spin_lock_irq(lock);
 }
 
-static void hermes_unlock_irq(spinlock_t *lock) __releases(lock)
+static void r7plust_unlock_irq(spinlock_t *lock) __releases(lock)
 {
 	spin_unlock_irq(lock);
 }
 
-/* Hermes operations for local buses */
-static const struct hermes_ops hermes_ops_local = {
-	.init = hermes_init,
-	.cmd_wait = hermes_docmd_wait,
-	.init_cmd_wait = hermes_doicmd_wait,
-	.allocate = hermes_allocate,
-	.read_ltv = hermes_read_ltv,
-	.write_ltv = hermes_write_ltv,
-	.bap_pread = hermes_bap_pread,
-	.bap_pwrite = hermes_bap_pwrite,
-	.read_pda = hermes_read_pda,
-	.program_init = hermesi_program_init,
-	.program_end = hermesi_program_end,
-	.program = hermes_program_bytes,
-	.lock_irqsave = hermes_lock_irqsave,
-	.unlock_irqrestore = hermes_unlock_irqrestore,
-	.lock_irq = hermes_lock_irq,
-	.unlock_irq = hermes_unlock_irq,
+/* R7plust operations for local buses */
+static const struct r7plust_ops r7plust_ops_local = {
+	.init = r7plust_init,
+	.cmd_wait = r7plust_docmd_wait,
+	.init_cmd_wait = r7plust_doicmd_wait,
+	.allocate = r7plust_allocate,
+	.read_ltv = r7plust_read_ltv,
+	.write_ltv = r7plust_write_ltv,
+	.bap_pread = r7plust_bap_pread,
+	.bap_pwrite = r7plust_bap_pwrite,
+	.read_pda = r7plust_read_pda,
+	.program_init = r7plusti_program_init,
+	.program_end = r7plusti_program_end,
+	.program = r7plust_program_bytes,
+	.lock_irqsave = r7plust_lock_irqsave,
+	.unlock_irqrestore = r7plust_unlock_irqrestore,
+	.lock_irq = r7plust_lock_irq,
+	.unlock_irq = r7plust_unlock_irq,
 };

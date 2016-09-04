@@ -59,7 +59,7 @@
  * We need this to get going...
  * This is the part of the code that is strongly inspired from wlan-ng
  *
- * Note bis : Don't try to access HERMES_CMD during the reset phase.
+ * Note bis : Don't try to access R7PLUST_CMD during the reset phase.
  * It just won't work !
  */
 static int orinoco_nortel_cor_reset(struct orinoco_private *priv)
@@ -144,7 +144,7 @@ static int orinoco_nortel_init_one(struct pci_dev *pdev,
 	int err;
 	struct orinoco_private *priv;
 	struct orinoco_pci_card *card;
-	void __iomem *hermes_io, *bridge_io, *attr_io;
+	void __iomem *r7plust_io, *bridge_io, *attr_io;
 
 	err = pci_enable_device(pdev);
 	if (err) {
@@ -172,11 +172,11 @@ static int orinoco_nortel_init_one(struct pci_dev *pdev,
 		goto fail_map_attr;
 	}
 
-	hermes_io = pci_iomap(pdev, 2, 0);
-	if (!hermes_io) {
+	r7plust_io = pci_iomap(pdev, 2, 0);
+	if (!r7plust_io) {
 		printk(KERN_ERR PFX "Cannot map chipset registers\n");
 		err = -EIO;
-		goto fail_map_hermes;
+		goto fail_map_r7plust;
 	}
 
 	/* Allocate network device */
@@ -192,7 +192,7 @@ static int orinoco_nortel_init_one(struct pci_dev *pdev,
 	card->bridge_io = bridge_io;
 	card->attr_io = attr_io;
 
-	hermes_struct_init(&priv->hw, hermes_io, HERMES_16BIT_REGSPACING);
+	r7plust_struct_init(&priv->hw, r7plust_io, R7PLUST_16BIT_REGSPACING);
 
 	err = request_irq(pdev->irq, orinoco_interrupt, IRQF_SHARED,
 			  DRIVER_NAME, priv);
@@ -238,9 +238,9 @@ static int orinoco_nortel_init_one(struct pci_dev *pdev,
 	free_orinocodev(priv);
 
  fail_alloc:
-	pci_iounmap(pdev, hermes_io);
+	pci_iounmap(pdev, r7plust_io);
 
- fail_map_hermes:
+ fail_map_r7plust:
 	pci_iounmap(pdev, attr_io);
 
  fail_map_attr:

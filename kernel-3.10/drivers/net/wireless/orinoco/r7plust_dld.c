@@ -1,14 +1,14 @@
 /*
- * Hermes download helper.
+ * R7plust download helper.
  *
  * This helper:
- *  - is capable of writing to the volatile area of the hermes device
+ *  - is capable of writing to the volatile area of the r7plust device
  *  - is currently not capable of writing to non-volatile areas
  *  - provide helpers to identify and update plugin data
  *  - is not capable of interpreting a fw image directly. That is up to
  *    the main card driver.
- *  - deals with Hermes I devices. It can probably be modified to deal
- *    with Hermes II devices
+ *  - deals with R7plust I devices. It can probably be modified to deal
+ *    with R7plust II devices
  *
  * Copyright (C) 2007, David Kilroy
  *
@@ -41,10 +41,10 @@
 
 #include <linux/module.h>
 #include <linux/delay.h>
-#include "hermes.h"
-#include "hermes_dld.h"
+#include "r7plust.h"
+#include "r7plust_dld.h"
 
-#define PFX "hermes_dld: "
+#define PFX "r7plust_dld: "
 
 /* End markers used in dblocks */
 #define PDI_END		0x00000000	/* End of PDA */
@@ -146,7 +146,7 @@ pdi_len(const struct pdi *pdi)
  * If it's not found, return NULL.
  */
 static const struct pdr *
-hermes_find_pdr(const struct pdr *first_pdr, u32 record_id, const void *end)
+r7plust_find_pdr(const struct pdr *first_pdr, u32 record_id, const void *end)
 {
 	const struct pdr *pdr = first_pdr;
 
@@ -173,7 +173,7 @@ hermes_find_pdr(const struct pdr *first_pdr, u32 record_id, const void *end)
 
 /* Scan production data items for a particular entry */
 static const struct pdi *
-hermes_find_pdi(const struct pdi *first_pdi, u32 record_id, const void *end)
+r7plust_find_pdi(const struct pdi *first_pdi, u32 record_id, const void *end)
 {
 	const struct pdi *pdi = first_pdi;
 
@@ -193,13 +193,13 @@ hermes_find_pdi(const struct pdi *first_pdi, u32 record_id, const void *end)
 
 /* Process one Plug Data Item - find corresponding PDR and plug it */
 static int
-hermes_plug_pdi(struct hermes *hw, const struct pdr *first_pdr,
+r7plust_plug_pdi(struct r7plust *hw, const struct pdr *first_pdr,
 		const struct pdi *pdi, const void *pdr_end)
 {
 	const struct pdr *pdr;
 
 	/* Find the PDR corresponding to this PDI */
-	pdr = hermes_find_pdr(first_pdr, pdi_id(pdi), pdr_end);
+	pdr = r7plust_find_pdr(first_pdr, pdi_id(pdi), pdr_end);
 
 	/* No match is found, safe to ignore */
 	if (!pdr)
@@ -220,7 +220,7 @@ hermes_plug_pdi(struct hermes *hw, const struct pdr *first_pdr,
  * Attempt to write every records that is in the specified pda
  * which also has a valid production data record for the firmware.
  */
-int hermes_apply_pda(struct hermes *hw,
+int r7plust_apply_pda(struct r7plust *hw,
 		     const char *first_pdr,
 		     const void *pdr_end,
 		     const __le16 *pda,
@@ -237,7 +237,7 @@ int hermes_apply_pda(struct hermes *hw,
 	pdi = (const struct pdi *) (pda + 2);
 	while (((void *) pdi <= pda_end) &&
 	       (pdi_id(pdi) != PDI_END)) {
-		ret = hermes_plug_pdi(hw, pdr, pdi, pdr_end);
+		ret = r7plust_plug_pdi(hw, pdr, pdi, pdr_end);
 		if (ret)
 			return ret;
 
@@ -251,7 +251,7 @@ int hermes_apply_pda(struct hermes *hw,
  * including the header data.
  */
 size_t
-hermes_blocks_length(const char *first_block, const void *end)
+r7plust_blocks_length(const char *first_block, const void *end)
 {
 	const struct dblock *blk = (const struct dblock *) first_block;
 	int total_len = 0;
@@ -271,10 +271,10 @@ hermes_blocks_length(const char *first_block, const void *end)
 	return total_len;
 }
 
-/*** Hermes programming ***/
+/*** R7plust programming ***/
 
 /* Program the data blocks */
-int hermes_program(struct hermes *hw, const char *first_block, const void *end)
+int r7plust_program(struct r7plust *hw, const char *first_block, const void *end)
 {
 	const struct dblock *blk;
 	u32 blkaddr;
@@ -309,7 +309,7 @@ int hermes_program(struct hermes *hw, const char *first_block, const void *end)
 	return err;
 }
 
-/*** Default plugging data for Hermes I ***/
+/*** Default plugging data for R7plust I ***/
 /* Values from wl_lkm_718/hcf/dhf.c */
 
 #define DEFINE_DEFAULT_PDR(pid, length, data)				\
@@ -387,7 +387,7 @@ DEFINE_DEFAULT_PDR(0x0161, 256,
  *
  * For certain records, use defaults if they are not found in pda.
  */
-int hermes_apply_pda_with_defaults(struct hermes *hw,
+int r7plust_apply_pda_with_defaults(struct r7plust *hw,
 				   const char *first_pdr,
 				   const void *pdr_end,
 				   const __le16 *pda,
@@ -414,7 +414,7 @@ int hermes_apply_pda_with_defaults(struct hermes *hw,
 			break;
 		record_id = pdr_id(pdr);
 
-		pdi = hermes_find_pdi(first_pdi, record_id, pda_end);
+		pdi = r7plust_find_pdi(first_pdi, record_id, pda_end);
 		if (pdi)
 			pr_debug(PFX "Found record 0x%04x at %p\n",
 				 record_id, pdi);
@@ -422,7 +422,7 @@ int hermes_apply_pda_with_defaults(struct hermes *hw,
 		switch (record_id) {
 		case 0x110: /* Modem REFDAC values */
 		case 0x120: /* Modem VGDAC values */
-			outdoor_pdi = hermes_find_pdi(first_pdi, record_id + 1,
+			outdoor_pdi = r7plust_find_pdi(first_pdi, record_id + 1,
 						      pda_end);
 			default_pdi = NULL;
 			if (outdoor_pdi) {
