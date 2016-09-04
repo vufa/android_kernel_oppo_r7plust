@@ -1,39 +1,19 @@
+/*
+ * Copyright (C) 2015 MediaTek Inc.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ */
+
 #ifndef _KD_CAMERA_FEATURE_ID_H_
 #define _KD_CAMERA_FEATURE_ID_H_
 
-
-#define ENUM_MISC_FIDS_SI(fids...)\
-    FID_PRE_BEGIN_MISC_SI       = FID_PRE_BEGIN_SI, \
-    fids    \
-    FID_OVER_LAST_MISC_SI
-#define ENUM_RAW_ONLY_FIDS_SI(fids...)\
-    FID_PRE_BEGIN_RAW_ONLY_SI   = FID_OVER_LAST_MISC_SI - 1, \
-    fids    \
-    FID_OVER_LAST_RAW_ONLY_SI
-#define ENUM_RAW_YUV_SHARED_FIDS_SI(fids...)\
-    FID_PRE_BEGIN_RAW_YUV_SI    = FID_OVER_LAST_RAW_ONLY_SI - 1, \
-    fids    \
-    FID_OVER_LAST_RAW_YUV_SI
-#define ENUM_YUV_ONLY_FIDS_SI(fids...)\
-    FID_PRE_BEGIN_YUV_ONLY_SI   = FID_OVER_LAST_RAW_YUV_SI - 1, \
-    fids    \
-    FID_OVER_LAST_YUV_ONLY_SI
-#define ENUM_MISC_FIDS_SD(fids...)\
-    FID_PRE_BEGIN_MISC_SD       = FID_PRE_BEGIN_SD, \
-    fids    \
-    FID_OVER_LAST_MISC_SD
-#define ENUM_RAW_ONLY_SD(fids...)\
-    FID_PRE_BEGIN_RAW_ONLY_SD   = FID_OVER_LAST_MISC_SD - 1, \
-    fids    \
-    FID_OVER_LAST_RAW_ONLY_SD
-#define ENUM_RAW_YUV_SHARED_FIDS_SD(fids...)\
-    FID_PRE_BEGIN_RAW_YUV_SD = FID_OVER_LAST_RAW_ONLY_SD - 1, \
-    fids    \
-    FID_OVER_LAST_RAW_YUV_SD
-#define ENUM_YUV_ONLY_SD(fids...)\
-    FID_PRE_BEGIN_YUV_ONLY_SD = FID_OVER_LAST_RAW_YUV_SD - 1, \
-    fids    \
-    FID_OVER_LAST_YUV_ONLY_SD
 
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -47,7 +27,7 @@ typedef enum {
     FID_PRE_BEGIN_SI = FID_PRE_BEGIN,
     /* ---------------------------------------------------------------------------- */
     /* Misc. feature id. */
-    ENUM_MISC_FIDS_SI(
+    FID_PRE_BEGIN_MISC_SI = FID_PRE_BEGIN_SI,
         FID_ZOOM_FACTOR,  /* Legacy symbol (Remove if possible) */
         FID_AE_STROBE,
         FID_EIS,
@@ -55,11 +35,10 @@ typedef enum {
         FID_AWB2PASS,
         FID_AF_LAMP,
         FID_FAST_CONTINUOUS_SHOT,
-    ),
-    /* RAW-only feature id. */
-    ENUM_RAW_ONLY_FIDS_SI(),
-    /* RAW-YUV-shared feature id. */
-    ENUM_RAW_YUV_SHARED_FIDS_SI(
+        FID_OVER_LAST_MISC_SI,
+        FID_PRE_BEGIN_RAW_ONLY_SI = FID_OVER_LAST_MISC_SI - 1,
+        FID_OVER_LAST_RAW_ONLY_SI,
+        FID_PRE_BEGIN_RAW_YUV_SI = FID_OVER_LAST_RAW_ONLY_SI - 1,
         FID_SCENE_MODE,
         FID_COLOR_EFFECT,
         FID_CAPTURE_MODE,
@@ -76,10 +55,11 @@ typedef enum {
         FID_STEREO_3D_TYPE,
         FID_STEREO_3D_MODE,
         FID_STEREO_3D_IMAGE_FORMAT,
-
-    ),
+        FID_OVER_LAST_RAW_YUV_SI,
     /* YUV-only feature id. */
-    ENUM_YUV_ONLY_FIDS_SI(),
+    FID_PRE_BEGIN_YUV_ONLY_SI = FID_OVER_LAST_RAW_YUV_SI - 1,
+    FID_OVER_LAST_YUV_ONLY_SI,
+    
     /* ---------------------------------------------------------------------------- */
     FID_OVER_LAST_SI = FID_OVER_LAST_YUV_ONLY_SI,
     /* //////////////////////////////////////////////////////////////////////////// */
@@ -87,13 +67,14 @@ typedef enum {
     FID_PRE_BEGIN_SD = FID_OVER_LAST_SI - 1,
     /* ---------------------------------------------------------------------------- */
     /* Misc. feature id. */
-    ENUM_MISC_FIDS_SD(
-        FID_FD_ON_OFF,
-    ),
+    FID_PRE_BEGIN_MISC_SD = FID_PRE_BEGIN_SD,
+    FID_FD_ON_OFF,
+    FID_OVER_LAST_MISC_SD,
     /* RAW-only feature id. */
-    ENUM_RAW_ONLY_SD(),
+    FID_PRE_BEGIN_RAW_ONLY_SD = FID_OVER_LAST_MISC_SD - 1,
+    FID_OVER_LAST_RAW_ONLY_SD,
     /* RAW-YUV-shared feature id. */
-    ENUM_RAW_YUV_SHARED_FIDS_SD(
+    FID_PRE_BEGIN_RAW_YUV_SD = FID_OVER_LAST_RAW_ONLY_SD - 1,
         FID_AE_SCENE_MODE,
         FID_AE_METERING,
         FID_AE_ISO,
@@ -106,15 +87,16 @@ typedef enum {
         FID_ISP_SAT,
         FID_ISP_BRIGHT,
         FID_ISP_CONTRAST,
-    ),
+        FID_OVER_LAST_RAW_YUV_SD,
     /* YUV-only feature id. */
-    ENUM_YUV_ONLY_SD(
+        FID_PRE_BEGIN_YUV_ONLY_SD = FID_OVER_LAST_RAW_YUV_SD - 1,
         FID_YUV_AUTOTEST,
-    ),
+        FID_OVER_LAST_YUV_ONLY_SD,
+    
     /* ---------------------------------------------------------------------------- */
     FID_OVER_LAST_SD = FID_OVER_LAST_YUV_ONLY_SD,
     /* //////////////////////////////////////////////////////////////////////////// */
-    FID_OVER_LAST = FID_OVER_LAST_SD,
+    FID_OVER_LAST = FID_OVER_LAST_SD
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 } FEATURE_ID;

@@ -11,11 +11,6 @@
 # GNU General Public License for more details.
 #
 
-include $(srctree)/drivers/misc/mediatek/imgsensor/src/Makefile.custom
+obj-y += imx278mipiraw_Sensor.o
 
-obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM_SENSOR))/
-
-ifeq ($(CONFIG_MTK_CAM_MAX_NUMBER_OF_CAMERA),4)
-subdir-ccflags-y += -DMTK_SUB2_IMGSENSOR
-endif
 
