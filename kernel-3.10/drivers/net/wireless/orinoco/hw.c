@@ -1,4 +1,4 @@
-/* Encapsulate basic setting changes and retrieval on Hermes hardware
+/* Encapsulate basic setting changes and retrieval on R7plust hardware
  *
  * See copyright notice in main.c
  */
@@ -8,8 +8,8 @@
 #include <linux/ieee80211.h>
 #include <linux/wireless.h>
 #include <net/cfg80211.h>
-#include "hermes.h"
-#include "hermes_rid.h"
+#include "r7plust.h"
+#include "r7plust_rid.h"
 #include "orinoco.h"
 
 #include "hw.h"
@@ -71,14 +71,14 @@ int determine_fw_capabilities(struct orinoco_private *priv,
 			      u32 *hw_ver)
 {
 	struct device *dev = priv->dev;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
 	struct comp_id nic_id, sta_id;
 	unsigned int firmver;
 	char tmp[SYMBOL_MAX_VER_LEN + 1] __attribute__((aligned(2)));
 
 	/* Get the hardware version */
-	err = HERMES_READ_RECORD(hw, USER_BAP, HERMES_RID_NICID, &nic_id);
+	err = R7PLUST_READ_RECORD(hw, USER_BAP, R7PLUST_RID_NICID, &nic_id);
 	if (err) {
 		dev_err(dev, "Cannot read hardware identity: error %d\n",
 			err);
@@ -101,7 +101,7 @@ int determine_fw_capabilities(struct orinoco_private *priv,
 	priv->firmware_type = determine_firmware_type(&nic_id);
 
 	/* Get the firmware version */
-	err = HERMES_READ_RECORD(hw, USER_BAP, HERMES_RID_STAID, &sta_id);
+	err = R7PLUST_READ_RECORD(hw, USER_BAP, R7PLUST_RID_STAID, &sta_id);
 	if (err) {
 		dev_err(dev, "Cannot read station identity: error %d\n",
 			err);
@@ -178,7 +178,7 @@ int determine_fw_capabilities(struct orinoco_private *priv,
 		memset(tmp, 0, sizeof(tmp));
 		/* Get the Symbol firmware version */
 		err = hw->ops->read_ltv(hw, USER_BAP,
-					HERMES_RID_SECONDARYVERSION_SYMBOL,
+					R7PLUST_RID_SECONDARYVERSION_SYMBOL,
 					SYMBOL_MAX_VER_LEN, NULL, &tmp);
 		if (err) {
 			dev_warn(dev, "Error %d reading Symbol firmware info. "
@@ -262,7 +262,7 @@ int determine_fw_capabilities(struct orinoco_private *priv,
 	if (fw_name)
 		dev_info(dev, "Firmware determined as %s\n", fw_name);
 
-#ifndef CONFIG_HERMES_PRISM
+#ifndef CONFIG_R7PLUST_PRISM
 	if (priv->firmware_type == FIRMWARE_TYPE_INTERSIL) {
 		dev_err(dev, "Support for Prism chipset is not enabled\n");
 		return -ENODEV;
@@ -279,14 +279,14 @@ int determine_fw_capabilities(struct orinoco_private *priv,
 int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 {
 	struct device *dev = priv->dev;
-	struct hermes_idstring nickbuf;
-	struct hermes *hw = &priv->hw;
+	struct r7plust_idstring nickbuf;
+	struct r7plust *hw = &priv->hw;
 	int len;
 	int err;
 	u16 reclen;
 
 	/* Get the MAC address */
-	err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_CNFOWNMACADDR,
+	err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_CNFOWNMACADDR,
 				ETH_ALEN, NULL, dev_addr);
 	if (err) {
 		dev_warn(dev, "Failed to read MAC address!\n");
@@ -296,7 +296,7 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 	dev_dbg(dev, "MAC address %pM\n", dev_addr);
 
 	/* Get the station name */
-	err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_CNFOWNNAME,
+	err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_CNFOWNNAME,
 				sizeof(nickbuf), &reclen, &nickbuf);
 	if (err) {
 		dev_err(dev, "failed to read station name\n");
@@ -312,7 +312,7 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 	dev_dbg(dev, "Station name \"%s\"\n", priv->nick);
 
 	/* Get allowed channels */
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_CHANNELLIST,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_CHANNELLIST,
 				  &priv->channel_mask);
 	if (err) {
 		dev_err(dev, "Failed to read channel list!\n");
@@ -320,13 +320,13 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 	}
 
 	/* Get initial AP density */
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_CNFSYSTEMSCALE,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_CNFSYSTEMSCALE,
 				  &priv->ap_density);
 	if (err || priv->ap_density < 1 || priv->ap_density > 3)
 		priv->has_sensitivity = 0;
 
 	/* Get initial RTS threshold */
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_CNFRTSTHRESHOLD,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_CNFRTSTHRESHOLD,
 				  &priv->rts_thresh);
 	if (err) {
 		dev_err(dev, "Failed to read RTS threshold!\n");
@@ -335,12 +335,12 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 
 	/* Get initial fragmentation settings */
 	if (priv->has_mwo)
-		err = hermes_read_wordrec(hw, USER_BAP,
-					  HERMES_RID_CNFMWOROBUST_AGERE,
+		err = r7plust_read_wordrec(hw, USER_BAP,
+					  R7PLUST_RID_CNFMWOROBUST_AGERE,
 					  &priv->mwo_robust);
 	else
-		err = hermes_read_wordrec(hw, USER_BAP,
-					  HERMES_RID_CNFFRAGMENTATIONTHRESHOLD,
+		err = r7plust_read_wordrec(hw, USER_BAP,
+					  R7PLUST_RID_CNFFRAGMENTATIONTHRESHOLD,
 					  &priv->frag_thresh);
 	if (err) {
 		dev_err(dev, "Failed to read fragmentation settings!\n");
@@ -351,16 +351,16 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 	if (priv->has_pm) {
 		priv->pm_on = 0;
 		priv->pm_mcast = 1;
-		err = hermes_read_wordrec(hw, USER_BAP,
-					  HERMES_RID_CNFMAXSLEEPDURATION,
+		err = r7plust_read_wordrec(hw, USER_BAP,
+					  R7PLUST_RID_CNFMAXSLEEPDURATION,
 					  &priv->pm_period);
 		if (err) {
 			dev_err(dev, "Failed to read power management "
 				"period!\n");
 			goto out;
 		}
-		err = hermes_read_wordrec(hw, USER_BAP,
-					  HERMES_RID_CNFPMHOLDOVERDURATION,
+		err = r7plust_read_wordrec(hw, USER_BAP,
+					  R7PLUST_RID_CNFPMHOLDOVERDURATION,
 					  &priv->pm_timeout);
 		if (err) {
 			dev_err(dev, "Failed to read power management "
@@ -371,8 +371,8 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 
 	/* Preamble setup */
 	if (priv->has_preamble) {
-		err = hermes_read_wordrec(hw, USER_BAP,
-					  HERMES_RID_CNFPREAMBLE_SYMBOL,
+		err = r7plust_read_wordrec(hw, USER_BAP,
+					  R7PLUST_RID_CNFPREAMBLE_SYMBOL,
 					  &priv->preamble);
 		if (err) {
 			dev_err(dev, "Failed to read preamble setup\n");
@@ -381,21 +381,21 @@ int orinoco_hw_read_card_settings(struct orinoco_private *priv, u8 *dev_addr)
 	}
 
 	/* Retry settings */
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_SHORTRETRYLIMIT,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_SHORTRETRYLIMIT,
 				  &priv->short_retry_limit);
 	if (err) {
 		dev_err(dev, "Failed to read short retry limit\n");
 		goto out;
 	}
 
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_LONGRETRYLIMIT,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_LONGRETRYLIMIT,
 				  &priv->long_retry_limit);
 	if (err) {
 		dev_err(dev, "Failed to read long retry limit\n");
 		goto out;
 	}
 
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_MAXTRANSMITLIFETIME,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_MAXTRANSMITLIFETIME,
 				  &priv->retry_lifetime);
 	if (err) {
 		dev_err(dev, "Failed to read max retry lifetime\n");
@@ -410,7 +410,7 @@ out:
 int orinoco_hw_allocate_fid(struct orinoco_private *priv)
 {
 	struct device *dev = priv->dev;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
 
 	err = hw->ops->allocate(hw, priv->nicbuf_size, &priv->txfid);
@@ -458,13 +458,13 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 {
 	struct net_device *dev = priv->ndev;
 	struct wireless_dev *wdev = netdev_priv(dev);
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
-	struct hermes_idstring idbuf;
+	struct r7plust_idstring idbuf;
 
 	/* Set the MAC address */
-	err = hw->ops->write_ltv(hw, USER_BAP, HERMES_RID_CNFOWNMACADDR,
-				 HERMES_BYTES_TO_RECLEN(ETH_ALEN),
+	err = hw->ops->write_ltv(hw, USER_BAP, R7PLUST_RID_CNFOWNMACADDR,
+				 R7PLUST_BYTES_TO_RECLEN(ETH_ALEN),
 				 dev->dev_addr);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting MAC address\n",
@@ -473,7 +473,7 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	}
 
 	/* Set up the link mode */
-	err = hermes_write_wordrec(hw, USER_BAP, HERMES_RID_CNFPORTTYPE,
+	err = r7plust_write_wordrec(hw, USER_BAP, R7PLUST_RID_CNFPORTTYPE,
 				   priv->port_type);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting port type\n",
@@ -482,8 +482,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	}
 	/* Set the channel/frequency */
 	if (priv->channel != 0 && priv->iw_mode != NL80211_IFTYPE_STATION) {
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFOWNCHANNEL,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFOWNCHANNEL,
 					   priv->channel);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting channel %d\n",
@@ -506,8 +506,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 			createibss = priv->createibss;
 		}
 
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFCREATEIBSS,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFCREATEIBSS,
 					   createibss);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting CREATEIBSS\n",
@@ -528,16 +528,16 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	idbuf.len = cpu_to_le16(strlen(priv->desired_essid));
 	memcpy(&idbuf.val, priv->desired_essid, sizeof(idbuf.val));
 	/* WinXP wants partner to configure OWNSSID even in IBSS mode. (jimc) */
-	err = hw->ops->write_ltv(hw, USER_BAP, HERMES_RID_CNFOWNSSID,
-			HERMES_BYTES_TO_RECLEN(strlen(priv->desired_essid) + 2),
+	err = hw->ops->write_ltv(hw, USER_BAP, R7PLUST_RID_CNFOWNSSID,
+			R7PLUST_BYTES_TO_RECLEN(strlen(priv->desired_essid) + 2),
 			&idbuf);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting OWNSSID\n",
 		       dev->name, err);
 		return err;
 	}
-	err = hw->ops->write_ltv(hw, USER_BAP, HERMES_RID_CNFDESIREDSSID,
-			HERMES_BYTES_TO_RECLEN(strlen(priv->desired_essid) + 2),
+	err = hw->ops->write_ltv(hw, USER_BAP, R7PLUST_RID_CNFDESIREDSSID,
+			R7PLUST_BYTES_TO_RECLEN(strlen(priv->desired_essid) + 2),
 			&idbuf);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting DESIREDSSID\n",
@@ -548,8 +548,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	/* Set the station name */
 	idbuf.len = cpu_to_le16(strlen(priv->nick));
 	memcpy(&idbuf.val, priv->nick, sizeof(idbuf.val));
-	err = hw->ops->write_ltv(hw, USER_BAP, HERMES_RID_CNFOWNNAME,
-				 HERMES_BYTES_TO_RECLEN(strlen(priv->nick) + 2),
+	err = hw->ops->write_ltv(hw, USER_BAP, R7PLUST_RID_CNFOWNNAME,
+				 R7PLUST_BYTES_TO_RECLEN(strlen(priv->nick) + 2),
 				 &idbuf);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting nickname\n",
@@ -559,8 +559,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 
 	/* Set AP density */
 	if (priv->has_sensitivity) {
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFSYSTEMSCALE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFSYSTEMSCALE,
 					   priv->ap_density);
 		if (err) {
 			printk(KERN_WARNING "%s: Error %d setting SYSTEMSCALE. "
@@ -572,7 +572,7 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	}
 
 	/* Set RTS threshold */
-	err = hermes_write_wordrec(hw, USER_BAP, HERMES_RID_CNFRTSTHRESHOLD,
+	err = r7plust_write_wordrec(hw, USER_BAP, R7PLUST_RID_CNFRTSTHRESHOLD,
 				   priv->rts_thresh);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting RTS threshold\n",
@@ -582,12 +582,12 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 
 	/* Set fragmentation threshold or MWO robustness */
 	if (priv->has_mwo)
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFMWOROBUST_AGERE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFMWOROBUST_AGERE,
 					   priv->mwo_robust);
 	else
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFFRAGMENTATIONTHRESHOLD,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFFRAGMENTATIONTHRESHOLD,
 					   priv->frag_thresh);
 	if (err) {
 		printk(KERN_ERR "%s: Error %d setting fragmentation\n",
@@ -605,8 +605,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 
 	/* Set power management */
 	if (priv->has_pm) {
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFPMENABLED,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFPMENABLED,
 					   priv->pm_on);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting up PM\n",
@@ -614,24 +614,24 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 			return err;
 		}
 
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFMULTICASTRECEIVE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFMULTICASTRECEIVE,
 					   priv->pm_mcast);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting up PM\n",
 			       dev->name, err);
 			return err;
 		}
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFMAXSLEEPDURATION,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFMAXSLEEPDURATION,
 					   priv->pm_period);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting up PM\n",
 			       dev->name, err);
 			return err;
 		}
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFPMHOLDOVERDURATION,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFPMHOLDOVERDURATION,
 					   priv->pm_timeout);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting up PM\n",
@@ -642,8 +642,8 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 
 	/* Set preamble - only for Symbol so far... */
 	if (priv->has_preamble) {
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFPREAMBLE_SYMBOL,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFPREAMBLE_SYMBOL,
 					   priv->preamble);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting preamble\n",
@@ -665,13 +665,13 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 	if (priv->iw_mode == NL80211_IFTYPE_MONITOR) {
 		/* Enable monitor mode */
 		dev->type = ARPHRD_IEEE80211;
-		err = hw->ops->cmd_wait(hw, HERMES_CMD_TEST |
-					    HERMES_TEST_MONITOR, 0, NULL);
+		err = hw->ops->cmd_wait(hw, R7PLUST_CMD_TEST |
+					    R7PLUST_TEST_MONITOR, 0, NULL);
 	} else {
 		/* Disable monitor mode */
 		dev->type = ARPHRD_ETHER;
-		err = hw->ops->cmd_wait(hw, HERMES_CMD_TEST |
-					    HERMES_TEST_STOP, 0, NULL);
+		err = hw->ops->cmd_wait(hw, R7PLUST_CMD_TEST |
+					    R7PLUST_TEST_STOP, 0, NULL);
 	}
 	if (err)
 		return err;
@@ -689,14 +689,14 @@ int orinoco_hw_program_rids(struct orinoco_private *priv)
 /* Get tsc from the firmware */
 int orinoco_hw_get_tkip_iv(struct orinoco_private *priv, int key, u8 *tsc)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 	u8 tsc_arr[4][ORINOCO_SEQ_LEN];
 
 	if ((key < 0) || (key >= 4))
 		return -EINVAL;
 
-	err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_CURRENT_TKIP_IV,
+	err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_CURRENT_TKIP_IV,
 				sizeof(tsc_arr), NULL, &tsc_arr);
 	if (!err)
 		memcpy(tsc, &tsc_arr[key][0], sizeof(tsc_arr[0]));
@@ -706,7 +706,7 @@ int orinoco_hw_get_tkip_iv(struct orinoco_private *priv, int key, u8 *tsc)
 
 int __orinoco_hw_set_bitrate(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int ratemode = priv->bitratemode;
 	int err = 0;
 
@@ -718,14 +718,14 @@ int __orinoco_hw_set_bitrate(struct orinoco_private *priv)
 
 	switch (priv->firmware_type) {
 	case FIRMWARE_TYPE_AGERE:
-		err = hermes_write_wordrec(hw, USER_BAP,
-				HERMES_RID_CNFTXRATECONTROL,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+				R7PLUST_RID_CNFTXRATECONTROL,
 				bitrate_table[ratemode].agere_txratectrl);
 		break;
 	case FIRMWARE_TYPE_INTERSIL:
 	case FIRMWARE_TYPE_SYMBOL:
-		err = hermes_write_wordrec(hw, USER_BAP,
-				HERMES_RID_CNFTXRATECONTROL,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+				R7PLUST_RID_CNFTXRATECONTROL,
 				bitrate_table[ratemode].intersil_txratectrl);
 		break;
 	default:
@@ -737,22 +737,22 @@ int __orinoco_hw_set_bitrate(struct orinoco_private *priv)
 
 int orinoco_hw_get_act_bitrate(struct orinoco_private *priv, int *bitrate)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int i;
 	int err = 0;
 	u16 val;
 
-	err = hermes_read_wordrec(hw, USER_BAP,
-				  HERMES_RID_CURRENTTXRATE, &val);
+	err = r7plust_read_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CURRENTTXRATE, &val);
 	if (err)
 		return err;
 
 	switch (priv->firmware_type) {
 	case FIRMWARE_TYPE_AGERE: /* Lucent style rate */
 		/* Note : in Lucent firmware, the return value of
-		 * HERMES_RID_CURRENTTXRATE is the bitrate in Mb/s,
+		 * R7PLUST_RID_CURRENTTXRATE is the bitrate in Mb/s,
 		 * and therefore is totally different from the
-		 * encoding of HERMES_RID_CNFTXRATECONTROL.
+		 * encoding of R7PLUST_RID_CNFTXRATECONTROL.
 		 * Don't forget that 6Mb/s is really 5.5Mb/s */
 		if (val == 6)
 			*bitrate = 5500000;
@@ -786,7 +786,7 @@ int __orinoco_hw_set_wap(struct orinoco_private *priv)
 {
 	int roaming_flag;
 	int err = 0;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 
 	switch (priv->firmware_type) {
 	case FIRMWARE_TYPE_AGERE:
@@ -798,13 +798,13 @@ int __orinoco_hw_set_wap(struct orinoco_private *priv)
 		else
 			roaming_flag = 1;
 
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFROAMINGMODE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFROAMINGMODE,
 					   roaming_flag);
 		break;
 	case FIRMWARE_TYPE_SYMBOL:
-		err = HERMES_WRITE_RECORD(hw, USER_BAP,
-					  HERMES_RID_CNFMANDATORYBSSID_SYMBOL,
+		err = R7PLUST_WRITE_RECORD(hw, USER_BAP,
+					  R7PLUST_RID_CNFMANDATORYBSSID_SYMBOL,
 					  &priv->desired_bssid);
 		break;
 	}
@@ -818,7 +818,7 @@ int __orinoco_hw_set_wap(struct orinoco_private *priv)
  * which is needed for 802.1x implementations. */
 int __orinoco_hw_setup_wepkeys(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 	int i;
 
@@ -840,13 +840,13 @@ int __orinoco_hw_setup_wepkeys(struct orinoco_private *priv)
 				keys[i].len = cpu_to_le16(0);
 		}
 
-		err = HERMES_WRITE_RECORD(hw, USER_BAP,
-					  HERMES_RID_CNFWEPKEYS_AGERE,
+		err = R7PLUST_WRITE_RECORD(hw, USER_BAP,
+					  R7PLUST_RID_CNFWEPKEYS_AGERE,
 					  &keys);
 		if (err)
 			return err;
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFTXKEY_AGERE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFTXKEY_AGERE,
 					   priv->tx_key);
 		if (err)
 			return err;
@@ -880,16 +880,16 @@ int __orinoco_hw_setup_wepkeys(struct orinoco_private *priv)
 				       priv->keys[i].key_len);
 
 				err = hw->ops->write_ltv(hw, USER_BAP,
-						HERMES_RID_CNFDEFAULTKEY0 + i,
-						HERMES_BYTES_TO_RECLEN(keylen),
+						R7PLUST_RID_CNFDEFAULTKEY0 + i,
+						R7PLUST_BYTES_TO_RECLEN(keylen),
 						key);
 				if (err)
 					return err;
 			}
 
 			/* Write the index of the key used in transmission */
-			err = hermes_write_wordrec(hw, USER_BAP,
-						HERMES_RID_CNFWEPDEFAULTKEYID,
+			err = r7plust_write_wordrec(hw, USER_BAP,
+						R7PLUST_RID_CNFWEPDEFAULTKEYID,
 						priv->tx_key);
 			if (err)
 				return err;
@@ -902,7 +902,7 @@ int __orinoco_hw_setup_wepkeys(struct orinoco_private *priv)
 
 int __orinoco_hw_setup_enc(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 	int master_wep_flag;
 	int auth_flag;
@@ -913,9 +913,9 @@ int __orinoco_hw_setup_enc(struct orinoco_private *priv)
 		__orinoco_hw_setup_wepkeys(priv);
 
 	if (priv->wep_restrict)
-		auth_flag = HERMES_AUTH_SHARED_KEY;
+		auth_flag = R7PLUST_AUTH_SHARED_KEY;
 	else
-		auth_flag = HERMES_AUTH_OPEN;
+		auth_flag = R7PLUST_AUTH_OPEN;
 
 	if (priv->wpa_enabled)
 		enc_flag = 2;
@@ -928,20 +928,20 @@ int __orinoco_hw_setup_enc(struct orinoco_private *priv)
 	case FIRMWARE_TYPE_AGERE: /* Agere style WEP */
 		if (priv->encode_alg == ORINOCO_ALG_WEP) {
 			/* Enable the shared-key authentication. */
-			err = hermes_write_wordrec(hw, USER_BAP,
-					HERMES_RID_CNFAUTHENTICATION_AGERE,
+			err = r7plust_write_wordrec(hw, USER_BAP,
+					R7PLUST_RID_CNFAUTHENTICATION_AGERE,
 					auth_flag);
 		}
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFWEPENABLED_AGERE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFWEPENABLED_AGERE,
 					   enc_flag);
 		if (err)
 			return err;
 
 		if (priv->has_wpa) {
 			/* Set WPA key management */
-			err = hermes_write_wordrec(hw, USER_BAP,
-				  HERMES_RID_CNFSETWPAAUTHMGMTSUITE_AGERE,
+			err = r7plust_write_wordrec(hw, USER_BAP,
+				  R7PLUST_RID_CNFSETWPAAUTHMGMTSUITE_AGERE,
 				  priv->key_mgmt);
 			if (err)
 				return err;
@@ -954,13 +954,13 @@ int __orinoco_hw_setup_enc(struct orinoco_private *priv)
 		if (priv->encode_alg == ORINOCO_ALG_WEP) {
 			if (priv->wep_restrict ||
 			    (priv->firmware_type == FIRMWARE_TYPE_SYMBOL))
-				master_wep_flag = HERMES_WEP_PRIVACY_INVOKED |
-						  HERMES_WEP_EXCL_UNENCRYPTED;
+				master_wep_flag = R7PLUST_WEP_PRIVACY_INVOKED |
+						  R7PLUST_WEP_EXCL_UNENCRYPTED;
 			else
-				master_wep_flag = HERMES_WEP_PRIVACY_INVOKED;
+				master_wep_flag = R7PLUST_WEP_PRIVACY_INVOKED;
 
-			err = hermes_write_wordrec(hw, USER_BAP,
-						   HERMES_RID_CNFAUTHENTICATION,
+			err = r7plust_write_wordrec(hw, USER_BAP,
+						   R7PLUST_RID_CNFAUTHENTICATION,
 						   auth_flag);
 			if (err)
 				return err;
@@ -968,11 +968,11 @@ int __orinoco_hw_setup_enc(struct orinoco_private *priv)
 			master_wep_flag = 0;
 
 		if (priv->iw_mode == NL80211_IFTYPE_MONITOR)
-			master_wep_flag |= HERMES_WEP_HOST_DECRYPT;
+			master_wep_flag |= R7PLUST_WEP_HOST_DECRYPT;
 
 		/* Master WEP setting : on/off */
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFWEPFLAGS_INTERSIL,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFWEPFLAGS_INTERSIL,
 					   master_wep_flag);
 		if (err)
 			return err;
@@ -999,7 +999,7 @@ int __orinoco_hw_set_tkip_key(struct orinoco_private *priv, int key_idx,
 		u8 rx_mic[MIC_KEYLEN];
 		u8 tsc[ORINOCO_SEQ_LEN];
 	} __packed buf;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int ret;
 	int err;
 	int k;
@@ -1034,7 +1034,7 @@ int __orinoco_hw_set_tkip_key(struct orinoco_private *priv, int key_idx,
 	/* Wait up to 100ms for tx queue to empty */
 	for (k = 100; k > 0; k--) {
 		udelay(1000);
-		ret = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_TXQUEUEEMPTY,
+		ret = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_TXQUEUEEMPTY,
 					  &xmitting);
 		if (ret || !xmitting)
 			break;
@@ -1043,8 +1043,8 @@ int __orinoco_hw_set_tkip_key(struct orinoco_private *priv, int key_idx,
 	if (k == 0)
 		ret = -ETIMEDOUT;
 
-	err = HERMES_WRITE_RECORD(hw, USER_BAP,
-				  HERMES_RID_CNFADDDEFAULTTKIPKEY_AGERE,
+	err = R7PLUST_WRITE_RECORD(hw, USER_BAP,
+				  R7PLUST_RID_CNFADDDEFAULTTKIPKEY_AGERE,
 				  &buf);
 
 	return ret ? ret : err;
@@ -1052,11 +1052,11 @@ int __orinoco_hw_set_tkip_key(struct orinoco_private *priv, int key_idx,
 
 int orinoco_clear_tkip_key(struct orinoco_private *priv, int key_idx)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
 
-	err = hermes_write_wordrec(hw, USER_BAP,
-				   HERMES_RID_CNFREMDEFAULTTKIPKEY_AGERE,
+	err = r7plust_write_wordrec(hw, USER_BAP,
+				   R7PLUST_RID_CNFREMDEFAULTTKIPKEY_AGERE,
 				   key_idx);
 	if (err)
 		printk(KERN_WARNING "%s: Error %d clearing TKIP key %d\n",
@@ -1068,12 +1068,12 @@ int __orinoco_hw_set_multicast_list(struct orinoco_private *priv,
 				    struct net_device *dev,
 				    int mc_count, int promisc)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 
 	if (promisc != priv->promiscuous) {
-		err = hermes_write_wordrec(hw, USER_BAP,
-					   HERMES_RID_CNFPROMISCUOUSMODE,
+		err = r7plust_write_wordrec(hw, USER_BAP,
+					   R7PLUST_RID_CNFPROMISCUOUSMODE,
 					   promisc);
 		if (err) {
 			printk(KERN_ERR "%s: Error %d setting PROMISCUOUSMODE to 1.\n",
@@ -1087,7 +1087,7 @@ int __orinoco_hw_set_multicast_list(struct orinoco_private *priv,
 	 * multicasting and want to stop */
 	if (!promisc && (mc_count || priv->mc_count)) {
 		struct netdev_hw_addr *ha;
-		struct hermes_multicast mclist;
+		struct r7plust_multicast mclist;
 		int i = 0;
 
 		netdev_for_each_mc_addr(ha, dev) {
@@ -1097,8 +1097,8 @@ int __orinoco_hw_set_multicast_list(struct orinoco_private *priv,
 		}
 
 		err = hw->ops->write_ltv(hw, USER_BAP,
-				   HERMES_RID_CNFGROUPADDRESSES,
-				   HERMES_BYTES_TO_RECLEN(mc_count * ETH_ALEN),
+				   R7PLUST_RID_CNFGROUPADDRESSES,
+				   R7PLUST_BYTES_TO_RECLEN(mc_count * ETH_ALEN),
 				   &mclist);
 		if (err)
 			printk(KERN_ERR "%s: Error %d setting multicast list.\n",
@@ -1113,9 +1113,9 @@ int __orinoco_hw_set_multicast_list(struct orinoco_private *priv,
 int orinoco_hw_get_essid(struct orinoco_private *priv, int *active,
 			 char buf[IW_ESSID_MAX_SIZE + 1])
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
-	struct hermes_idstring essidbuf;
+	struct r7plust_idstring essidbuf;
 	char *p = (char *)(&essidbuf.val);
 	int len;
 	unsigned long flags;
@@ -1135,8 +1135,8 @@ int orinoco_hw_get_essid(struct orinoco_private *priv, int *active,
 
 		*active = 1;
 
-		rid = (priv->port_type == 3) ? HERMES_RID_CNFOWNSSID :
-			HERMES_RID_CNFDESIREDSSID;
+		rid = (priv->port_type == 3) ? R7PLUST_RID_CNFOWNSSID :
+			R7PLUST_RID_CNFDESIREDSSID;
 
 		err = hw->ops->read_ltv(hw, USER_BAP, rid, sizeof(essidbuf),
 					NULL, &essidbuf);
@@ -1145,7 +1145,7 @@ int orinoco_hw_get_essid(struct orinoco_private *priv, int *active,
 	} else {
 		*active = 0;
 
-		err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_CURRENTSSID,
+		err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_CURRENTSSID,
 					sizeof(essidbuf), NULL, &essidbuf);
 		if (err)
 			goto fail_unlock;
@@ -1166,7 +1166,7 @@ int orinoco_hw_get_essid(struct orinoco_private *priv, int *active,
 
 int orinoco_hw_get_freq(struct orinoco_private *priv)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err = 0;
 	u16 channel;
 	int freq = 0;
@@ -1175,7 +1175,7 @@ int orinoco_hw_get_freq(struct orinoco_private *priv)
 	if (orinoco_lock(priv, &flags) != 0)
 		return -EBUSY;
 
-	err = hermes_read_wordrec(hw, USER_BAP, HERMES_RID_CURRENTCHANNEL,
+	err = r7plust_read_wordrec(hw, USER_BAP, R7PLUST_RID_CURRENTCHANNEL,
 				  &channel);
 	if (err)
 		goto out;
@@ -1206,8 +1206,8 @@ int orinoco_hw_get_freq(struct orinoco_private *priv)
 int orinoco_hw_get_bitratelist(struct orinoco_private *priv,
 			       int *numrates, s32 *rates, int max)
 {
-	struct hermes *hw = &priv->hw;
-	struct hermes_idstring list;
+	struct r7plust *hw = &priv->hw;
+	struct r7plust_idstring list;
 	unsigned char *p = (unsigned char *)&list.val;
 	int err = 0;
 	int num;
@@ -1217,7 +1217,7 @@ int orinoco_hw_get_bitratelist(struct orinoco_private *priv,
 	if (orinoco_lock(priv, &flags) != 0)
 		return -EBUSY;
 
-	err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_SUPPORTEDDATARATES,
+	err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_SUPPORTEDDATARATES,
 				sizeof(list), NULL, &list);
 	orinoco_unlock(priv, &flags);
 
@@ -1238,7 +1238,7 @@ int orinoco_hw_trigger_scan(struct orinoco_private *priv,
 			    const struct cfg80211_ssid *ssid)
 {
 	struct net_device *dev = priv->ndev;
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	unsigned long flags;
 	int err = 0;
 
@@ -1262,10 +1262,10 @@ int orinoco_hw_trigger_scan(struct orinoco_private *priv,
 	if (priv->has_hostscan) {
 		switch (priv->firmware_type) {
 		case FIRMWARE_TYPE_SYMBOL:
-			err = hermes_write_wordrec(hw, USER_BAP,
-						HERMES_RID_CNFHOSTSCAN_SYMBOL,
-						HERMES_HOSTSCAN_SYMBOL_ONCE |
-						HERMES_HOSTSCAN_SYMBOL_BCAST);
+			err = r7plust_write_wordrec(hw, USER_BAP,
+						R7PLUST_RID_CNFHOSTSCAN_SYMBOL,
+						R7PLUST_HOSTSCAN_SYMBOL_ONCE |
+						R7PLUST_HOSTSCAN_SYMBOL_BCAST);
 			break;
 		case FIRMWARE_TYPE_INTERSIL: {
 			__le16 req[3];
@@ -1273,45 +1273,45 @@ int orinoco_hw_trigger_scan(struct orinoco_private *priv,
 			req[0] = cpu_to_le16(0x3fff);	/* All channels */
 			req[1] = cpu_to_le16(0x0001);	/* rate 1 Mbps */
 			req[2] = 0;			/* Any ESSID */
-			err = HERMES_WRITE_RECORD(hw, USER_BAP,
-						  HERMES_RID_CNFHOSTSCAN, &req);
+			err = R7PLUST_WRITE_RECORD(hw, USER_BAP,
+						  R7PLUST_RID_CNFHOSTSCAN, &req);
 			break;
 		}
 		case FIRMWARE_TYPE_AGERE:
 			if (ssid->ssid_len > 0) {
-				struct hermes_idstring idbuf;
+				struct r7plust_idstring idbuf;
 				size_t len = ssid->ssid_len;
 
 				idbuf.len = cpu_to_le16(len);
 				memcpy(idbuf.val, ssid->ssid, len);
 
 				err = hw->ops->write_ltv(hw, USER_BAP,
-					       HERMES_RID_CNFSCANSSID_AGERE,
-					       HERMES_BYTES_TO_RECLEN(len + 2),
+					       R7PLUST_RID_CNFSCANSSID_AGERE,
+					       R7PLUST_BYTES_TO_RECLEN(len + 2),
 					       &idbuf);
 			} else
-				err = hermes_write_wordrec(hw, USER_BAP,
-						   HERMES_RID_CNFSCANSSID_AGERE,
+				err = r7plust_write_wordrec(hw, USER_BAP,
+						   R7PLUST_RID_CNFSCANSSID_AGERE,
 						   0);	/* Any ESSID */
 			if (err)
 				break;
 
 			if (priv->has_ext_scan) {
-				err = hermes_write_wordrec(hw, USER_BAP,
-						HERMES_RID_CNFSCANCHANNELS2GHZ,
+				err = r7plust_write_wordrec(hw, USER_BAP,
+						R7PLUST_RID_CNFSCANCHANNELS2GHZ,
 						0x7FFF);
 				if (err)
 					goto out;
 
-				err = hermes_inquire(hw,
-						     HERMES_INQ_CHANNELINFO);
+				err = r7plust_inquire(hw,
+						     R7PLUST_INQ_CHANNELINFO);
 			} else
-				err = hermes_inquire(hw, HERMES_INQ_SCAN);
+				err = r7plust_inquire(hw, R7PLUST_INQ_SCAN);
 
 			break;
 		}
 	} else
-		err = hermes_inquire(hw, HERMES_INQ_SCAN);
+		err = r7plust_inquire(hw, R7PLUST_INQ_SCAN);
 
  out:
 	orinoco_unlock(priv, &flags);
@@ -1323,7 +1323,7 @@ int orinoco_hw_trigger_scan(struct orinoco_private *priv,
 int orinoco_hw_disassociate(struct orinoco_private *priv,
 			    u8 *addr, u16 reason_code)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
 
 	struct {
@@ -1337,8 +1337,8 @@ int orinoco_hw_disassociate(struct orinoco_private *priv,
 
 	memcpy(buf.addr, addr, ETH_ALEN);
 	buf.reason_code = cpu_to_le16(reason_code);
-	err = HERMES_WRITE_RECORD(hw, USER_BAP,
-				  HERMES_RID_CNFDISASSOCIATE,
+	err = R7PLUST_WRITE_RECORD(hw, USER_BAP,
+				  R7PLUST_RID_CNFDISASSOCIATE,
 				  &buf);
 	return err;
 }
@@ -1346,10 +1346,10 @@ int orinoco_hw_disassociate(struct orinoco_private *priv,
 int orinoco_hw_get_current_bssid(struct orinoco_private *priv,
 				 u8 *addr)
 {
-	struct hermes *hw = &priv->hw;
+	struct r7plust *hw = &priv->hw;
 	int err;
 
-	err = hw->ops->read_ltv(hw, USER_BAP, HERMES_RID_CURRENTBSSID,
+	err = hw->ops->read_ltv(hw, USER_BAP, R7PLUST_RID_CURRENTBSSID,
 				ETH_ALEN, NULL, addr);
 
 	return err;

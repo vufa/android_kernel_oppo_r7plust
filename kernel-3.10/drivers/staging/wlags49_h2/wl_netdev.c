@@ -1777,7 +1777,7 @@ void wl_wds_netif_carrier_off( struct wl_private *lp )
  *
  *      lp   - a pointer to the device's wl_private struct.
  *      skb  - a pointer to the network layer's data buffer.
- *      port - the Hermes port on which to transmit.
+ *      port - the R7plust port on which to transmit.
  *
  *  RETURNS:
  *

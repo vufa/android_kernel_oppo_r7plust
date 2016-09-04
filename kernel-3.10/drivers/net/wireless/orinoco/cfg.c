@@ -189,9 +189,9 @@ static int orinoco_set_monitor_channel(struct wiphy *wiphy,
 	priv->channel = channel;
 	if (priv->iw_mode == NL80211_IFTYPE_MONITOR) {
 		/* Fast channel change - no commit if successful */
-		struct hermes *hw = &priv->hw;
-		err = hw->ops->cmd_wait(hw, HERMES_CMD_TEST |
-					    HERMES_TEST_SET_CHANNEL,
+		struct r7plust *hw = &priv->hw;
+		err = hw->ops->cmd_wait(hw, R7PLUST_CMD_TEST |
+					    R7PLUST_TEST_SET_CHANNEL,
 					channel, NULL);
 	}
 	orinoco_unlock(priv, &flags);

@@ -181,9 +181,9 @@ typedef struct {
  * 	The end of the array is indicated by a plug record of which all fields are zero.
  * The 'identity' field points to an array of TODO
  * 	The end of the array is indicated by a plug record of which all fields are zero.
- * The Hermes-I specific 'pdaplug' field points to an array of Production Data Plug record structures.
+ * The R7plust-I specific 'pdaplug' field points to an array of Production Data Plug record structures.
  * 	The end of the array is indicated by a plug record of which all fields are zero.
- * The Hermes-I specific 'priplug' field points to an array of Primary Information Plug record structures.
+ * The R7plust-I specific 'priplug' field points to an array of Primary Information Plug record structures.
  * 	The end of the array is indicated by a plug record of which all fields are zero.
  */
 typedef struct {

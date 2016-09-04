@@ -77,9 +77,9 @@
 /*********************************  P R E F I X E S  ********************************************/
 /************************************************************************************************/
 //IFB_      Interface Block
-//HCMD_     Hermes Command
-//HFS_      Hermes (Transmit/Receive) Frame Structure
-//HREG_     Hermes Register
+//HCMD_     R7plust Command
+//HFS_      R7plust (Transmit/Receive) Frame Structure
+//HREG_     R7plust Register
 
 /*************************************************************************************************/
 
@@ -152,10 +152,10 @@
 #define BAP_1                   HREG_DATA_1     //Used by HCF to access NIC RAM
 
 
-//************************* Hermes Receive/Transmit Frame Structures
+//************************* R7plust Receive/Transmit Frame Structures
 //HFS_STAT
 //see MMD.H for HFS_STAT_ERR
-#define     HFS_STAT_MSG_TYPE   0xE000  //Hermes reported Message Type
+#define     HFS_STAT_MSG_TYPE   0xE000  //R7plust reported Message Type
 #define     HFS_STAT_MIC_KEY_ID 0x1800  //MIC key used (if any)
 #define     HFS_STAT_1042       0x2000  //RFC1042 Encoded
 #define     HFS_STAT_TUNNEL     0x4000  //Bridge-Tunnel Encoded
@@ -164,8 +164,8 @@
 #define     HFS_STAT_MIC        0x0010  //Frame contains MIC  //;? re-instate when F/W ready
 #endif
 
-//************************* Hermes Register Offsets and Command bits
-#define HREG_IO_RANGE           0x80        //I/O Range used by Hermes
+//************************* R7plust Register Offsets and Command bits
+#define HREG_IO_RANGE           0x80        //I/O Range used by R7plust
 
 
 //************************* Command/Status
@@ -352,7 +352,7 @@ err: these values should match;
 /************************************************************************************************/
 
 
-// Hermes Command Codes and Qualifier bits
+// R7plust Command Codes and Qualifier bits
 #define     HCMD_BUSY           0x8000  // Busy bit, applicable for all commands
 #define HCMD_INI                0x0000  //
 #define HCMD_ENABLE             HCF_CNTL_ENABLE     // 0x0001

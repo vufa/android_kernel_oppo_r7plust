@@ -17,7 +17,7 @@
  *
  * SPECIFICATION: ........
  *
- * DESCRIPTION : HCF Routines for Hermes-II (callable via the Wireless Connection I/F or WCI)
+ * DESCRIPTION : HCF Routines for R7plust-II (callable via the Wireless Connection I/F or WCI)
  *               Local Support Routines for above procedures
  *
  *           Customizable via HCFCFG.H, which is included by HCF.H
@@ -350,7 +350,7 @@ struct CFG_RANGE6_STRCT BASED cfg_drv_act_ranges_hsi = {
 		{ 0, 0, 0 },                           // HCF_HSI_VAR_1 not supported by HCF 7
 		{ 0, 0, 0 },                           // HCF_HSI_VAR_2 not supported by HCF 7
 		{ 0, 0, 0 },                           // HCF_HSI_VAR_3 not supported by HCF 7
-#if defined HCF_HSI_VAR_4                   // Hermes-II all types
+#if defined HCF_HSI_VAR_4                   // R7plust-II all types
 		{  4,                                  // var_rec[1] - Variant number
 		   CFG_DRV_ACT_RANGES_HSI_4_BOTTOM,        //           - Bottom Compatibility
 		   CFG_DRV_ACT_RANGES_HSI_4_TOP            //           - Top Compatibility
@@ -358,7 +358,7 @@ struct CFG_RANGE6_STRCT BASED cfg_drv_act_ranges_hsi = {
 #else
 		{ 0, 0, 0 },
 #endif // HCF_HSI_VAR_4
-#if defined HCF_HSI_VAR_5                   // WARP Hermes-2.5
+#if defined HCF_HSI_VAR_5                   // WARP R7plust-2.5
 		{  5,                                  // var_rec[1] - Variant number
 		   CFG_DRV_ACT_RANGES_HSI_5_BOTTOM,        //           - Bottom Compatibility
 		   CFG_DRV_ACT_RANGES_HSI_5_TOP            //           - Top Compatibility
@@ -377,7 +377,7 @@ CFG_RANGE4_STRCT BASED cfg_drv_act_ranges_apf = {
 	COMP_ROLE_ACT,
 	COMP_ID_APF,
 	{
-#if defined HCF_APF_VAR_1               //(Fake) Hermes-I
+#if defined HCF_APF_VAR_1               //(Fake) R7plust-I
 		{  1,                                  //var_rec[1] - Variant number
 		   CFG_DRV_ACT_RANGES_APF_1_BOTTOM,        //           - Bottom Compatibility
 		   CFG_DRV_ACT_RANGES_APF_1_TOP            //           - Top Compatibility
@@ -385,7 +385,7 @@ CFG_RANGE4_STRCT BASED cfg_drv_act_ranges_apf = {
 #else
 		{ 0, 0, 0 },
 #endif // HCF_APF_VAR_1
-#if defined HCF_APF_VAR_2               //Hermes-II
+#if defined HCF_APF_VAR_2               //R7plust-II
 		{  2,                                  // var_rec[1] - Variant number
 		   CFG_DRV_ACT_RANGES_APF_2_BOTTOM,        //           - Bottom Compatibility
 		   CFG_DRV_ACT_RANGES_APF_2_TOP            //           - Top Compatibility
@@ -401,7 +401,7 @@ CFG_RANGE4_STRCT BASED cfg_drv_act_ranges_apf = {
 #else
 		{ 0, 0, 0 },
 #endif // HCF_APF_VAR_3
-#if defined HCF_APF_VAR_4                       // WARP Hermes 2.5
+#if defined HCF_APF_VAR_4                       // WARP R7plust 2.5
 		{  4,                                      // var_rec[1] - Variant number
 		   CFG_DRV_ACT_RANGES_APF_4_BOTTOM,        //           - Bottom Compatibility !!!!!see note below!!!!!!!
 		   CFG_DRV_ACT_RANGES_APF_4_TOP            //           - Top Compatibility
@@ -508,11 +508,11 @@ HCF_STATIC hcf_16* BASED xxxx[ ] = {
  *    - HCF_ACT_INT_FORCE_ON enable interrupt generation by WaveLAN NIC
  *    - HCF_ACT_INT_OFF      disable interrupt generation by WaveLAN NIC
  *    - HCF_ACT_INT_ON       compensate 1 HCF_ACT_INT_OFF, enable interrupt generation if balance reached
- *    - HCF_ACT_PRS_SCAN     Hermes Probe Response Scan (F102) command
- *    - HCF_ACT_RX_ACK       acknowledge non-DMA receiver to Hermes
- *    - HCF_ACT_SCAN         Hermes Inquire Scan (F101) command (non-WARP only)
+ *    - HCF_ACT_PRS_SCAN     R7plust Probe Response Scan (F102) command
+ *    - HCF_ACT_RX_ACK       acknowledge non-DMA receiver to R7plust
+ *    - HCF_ACT_SCAN         R7plust Inquire Scan (F101) command (non-WARP only)
  *    - HCF_ACT_SLEEP        DDS Sleep request
- *    - HCF_ACT_TALLIES      Hermes Inquire Tallies (F100) command
+ *    - HCF_ACT_TALLIES      R7plust Inquire Tallies (F100) command
  *
  *.RETURNS
  *   HCF_SUCCESS             all (including invalid)
@@ -619,7 +619,7 @@ HCF_STATIC hcf_16* BASED xxxx[ ] = {
  *   that there is no re-entrancy PROBLEM in this particular flow. It does not seem worth the trouble to
  *   explicitly check for this condition (although there was a report of an MSF which ran into this assert.
  * 2:IFB_IntOffCnt is used to balance the INT_OFF and INT_ON calls.  Disabling of the interrupts is achieved by
- *   writing a zero to the Hermes IntEn register.  In a shared interrupt environment (e.g. the mini-PCI NDIS
+ *   writing a zero to the R7plust IntEn register.  In a shared interrupt environment (e.g. the mini-PCI NDIS
  *   driver) it is considered more correct to return the status HCF_INT_PENDING if and only if, the current
  *   invocation of hcf_service_nic is (apparently) called in the ISR when the ISR was activated as result of a
  *   change in HREG_EV_STAT matching a bit in HREG_INT_EN, i.e. not if invoked as result of another device
@@ -635,7 +635,7 @@ HCF_STATIC hcf_16* BASED xxxx[ ] = {
  *   card interrupting via a shared IRQ during a download, fails.
  *4: The construction "if ( ifbp->IFB_IntOffCnt-- == 0 )" is optimal (in the sense of shortest/quickest
  *   path in error free flows) but NOT fail safe in case of too many INT_ON invocations compared to INT_OFF).
- *   Enabling of the interrupts is achieved by writing the Hermes IntEn register.
+ *   Enabling of the interrupts is achieved by writing the R7plust IntEn register.
  *    - If the HCF is in Defunct mode, the interrupts stay disabled.
  *    - Under "normal" conditions, the HCF is only interested in Info Events, Rx Events and Notify Events.
  *    - When the HCF is out of Tx/Notify resources, the HCF is also interested in Alloc Events.
@@ -655,11 +655,11 @@ HCF_STATIC hcf_16* BASED xxxx[ ] = {
  *   in: err "maintenance" during compilation if the assumptions are no longer met. The writing of HREG_PARAM_1
  *   with 0x3FFF in case of an PRS scan, is a kludge to get around lack of specification, hence different
  *   implementation in F/W and Host.
- *   When there is no NIC RAM available, some versions of the Hermes F/W do report 0x7F00 as error in the
+ *   When there is no NIC RAM available, some versions of the R7plust F/W do report 0x7F00 as error in the
  *   Result field of the Status register and some F/W versions don't. To mask this difference to the MSF all
- *   return codes of the Hermes are ignored ("best" and "most simple" solution to these types of analomies with
+ *   return codes of the R7plust are ignored ("best" and "most simple" solution to these types of analomies with
  *   an acceptable loss due to ignoring all error situations as well).
- *   The "No inquire space" is reported via the Hermes tallies.
+ *   The "No inquire space" is reported via the R7plust tallies.
  *30: do not HCFASSERT( rc, rc ) since rc == HCF_INT_PENDING is no error
  *
  *.ENDDOC                END DOCUMENTATION
@@ -783,12 +783,12 @@ hcf_action( IFBP ifbp, hcf_16 action )
 		ifbp->IFB_RxFID = ifbp->IFB_RxLen = 0;
 		break;
 
-  /*8*/ case  HCF_ACT_PRS_SCAN:                   // Hermes PRS Scan (F102)
+  /*8*/ case  HCF_ACT_PRS_SCAN:                   // R7plust PRS Scan (F102)
 		OPW( HREG_PARAM_1, 0x3FFF );
 		//Fall through in HCF_ACT_TALLIES
-	case HCF_ACT_TALLIES:                     // Hermes Inquire Tallies (F100)
+	case HCF_ACT_TALLIES:                     // R7plust Inquire Tallies (F100)
 #if ( (HCF_TYPE) & HCF_TYPE_HII5 ) == 0
-	case HCF_ACT_SCAN:                        // Hermes Inquire Scan (F101)
+	case HCF_ACT_SCAN:                        // R7plust Inquire Scan (F101)
 #endif // HCF_TYPE_HII5
 		/*!! the assumptions about numerical relationships between CFG_TALLIES etc and HCF_ACT_TALLIES etc
 		 *   are checked by #if statements just prior to this routine resulting in: err "maintenance"   */
@@ -817,7 +817,7 @@ hcf_action( IFBP ifbp, hcf_16 action )
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
- *   cmd         0x001F: Hermes command (disable, enable, connect, disconnect, continue)
+ *   cmd         0x001F: R7plust command (disable, enable, connect, disconnect, continue)
  *                   HCF_CNTL_ENABLE     Enable
  *                   HCF_CNTL_DISABLE    Disable
  *                   HCF_CNTL_CONTINUE   Continue
@@ -907,7 +907,7 @@ hcf_action( IFBP ifbp, hcf_16 action )
  *
  *.DIAGRAM
  *   hcf_cntl takes successively the following actions:
- *2: If the HCF is in Defunct mode or incompatible with the Primary or Station Supplier in the Hermes,
+ *2: If the HCF is in Defunct mode or incompatible with the Primary or Station Supplier in the R7plust,
  *   hcf_cntl() returns immediately with HCF_ERR_NO_NIC;? as status.
  *8: when the port is disabled, the DMA engine needs to be de-activated, so the host can safely reclaim tx
  *   packets from the tx descriptor chain.
@@ -1083,10 +1083,10 @@ hcf_cntl( IFBP ifbp, hcf_16 cmd )
  *   Note 1: it is very likely that an Alloc event is pending and very well possible that a (Send) Cmd event is
  *   pending on non-initial calls
  *   Note 2: it is assumed that this strategy takes away the need to ack every conceivable event after an
- *   Hermes Initialize
- *12:    Only H-II NEEDS the Hermes Initialize command. Due to the different semantics for H-I and H-II
+ *   R7plust Initialize
+ *12:    Only H-II NEEDS the R7plust Initialize command. Due to the different semantics for H-I and H-II
  *   Initialize command, init() does not (and can not, since it is called e.g. after a download) execute the
- *   Hermes Initialize command. Executing the Hermes Initialize command for H-I would not harm but not do
+ *   R7plust Initialize command. Executing the R7plust Initialize command for H-I would not harm but not do
  *   anything useful either, so it is skipped.
  *   The return status of cmd_exe is ignored. It is assumed that if cmd_exe fails, init fails too
  *14:    use io_base as a flag to merge hcf_connect and hcf_disconnect into 1 routine
@@ -1581,7 +1581,7 @@ hcf_dma_rx_put( IFBP ifbp, DESC_STRCT *descp )
  *.MODULE        DESC_STRCT* hcf_dma_tx_get( IFBP ifbp )
  *.PURPOSE       DMA mode: reclaims and decapsulates packets in the tx descriptor chain if:
  *                - A Tx packet has been copied from host-RAM into NIC-RAM by the DMA engine
- *                - The Hermes/DMAengine have been disabled
+ *                - The R7plust/DMAengine have been disabled
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
@@ -1635,7 +1635,7 @@ hcf_dma_tx_get( IFBP ifbp )
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
  *   descp       address of Tx Descriptor Chain (i.e. a single Tx frame)
- *   tx_cntl     indicates MAC-port and (Hermes) options
+ *   tx_cntl     indicates MAC-port and (R7plust) options
  *
  *.RETURNS       N.A.
  *
@@ -1716,7 +1716,7 @@ hcf_dma_tx_get( IFBP ifbp )
  *.ENDDOC                END DOCUMENTATION
  *
  *
- *1: Write tx_cntl parameter to HFS_TX_CNTL field into the Hermes-specific header in buffer 1
+ *1: Write tx_cntl parameter to HFS_TX_CNTL field into the R7plust-specific header in buffer 1
  *4: determine whether encapsulation is needed and write the type (tunnel or 1042) already at the appropriate
  *   offset in the 1st buffer
  *6: Build the encapsualtion enveloppe in the free space at the end of the 1st buffer
@@ -1816,7 +1816,7 @@ hcf_dma_tx_put( IFBP ifbp, DESC_STRCT *descp, hcf_16 tx_cntl )
  *  2:   convert type from "network" Endian format to native Endian
  *  4:   the litmus test to distinguish type and len.
  *   The hard code "magic" value of 1500 is intentional and should NOT be replaced by a mnemonic because it is
- *   not related at all to the maximum frame size supported  by the Hermes.
+ *   not related at all to the maximum frame size supported  by the R7plust.
  *  6:   check type against:
  *       0x80F3  //AppleTalk Address Resolution Protocol (AARP)
  *       0x8137  //IPX
@@ -1851,14 +1851,14 @@ hcf_encap( wci_bufp type )
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
  *   ltvp        address of LengthTypeValue structure specifying the "what" and the "how much" of the
- *               information to be collected from the HCF or from the Hermes
+ *               information to be collected from the HCF or from the R7plust
  *
  *.RETURNS
  *   HCF_ERR_LEN         The provided buffer was too small
  *   HCF_SUCCESS         Success
  *!! via cmd_exe ( type >= CFG_RID_FW_MIN )
  *   HCF_ERR_NO_NIC      NIC removed during retrieval
- *   HCF_ERR_TIME_OUT    Expected Hermes event did not occur in expected time
+ *   HCF_ERR_TIME_OUT    Expected R7plust event did not occur in expected time
  *!! via cmd_exe and setup_bap (type >= CFG_RID_FW_MIN )
  *   HCF_ERR_DEFUNCT_... HCF is in defunct mode (bits 0x7F reflect cause)
  *
@@ -1921,7 +1921,7 @@ hcf_encap( wci_bufp type )
  *   The exact layout of the provided data structure depends on the action code. Copying stops if either the
  *   complete Configuration Information is copied or if the number of bytes indicated by len is copied.  Len
  *   acts as a safe guard against Configuration Information blocks which have different sizes for different
- *   Hermes versions, e.g. when later versions support more tallies than earlier versions. It is a conscious
+ *   R7plust versions, e.g. when later versions support more tallies than earlier versions. It is a conscious
  *   decision that unused parts of the PC RAM buffer are not cleared.
  *
  *   Remarks: The only error against which is protected is the "Read error" as result of Card removal. Only the
@@ -1932,10 +1932,10 @@ hcf_encap( wci_bufp type )
  *   CFG_MB_INFO: copy the oldest MailBox Info Block or the "null" block if none available.
  *
  *   The mechanism to HCF_ASSERT on invalid typ-codes in the LTV record is based on the following strategy:
- *     - during the pseudo-asynchronous Hermes commands (diagnose, download) only CFG_MB_INFO is acceptable
+ *     - during the pseudo-asynchronous R7plust commands (diagnose, download) only CFG_MB_INFO is acceptable
  *     - some codes (e.g. CFG_TALLIES) are explicitly handled by the HCF which implies that these codes
  *       are valid
- *     - all other codes in the range 0xFC00 through 0xFFFF are passed to the Hermes.  The Hermes returns an
+ *     - all other codes in the range 0xFC00 through 0xFFFF are passed to the R7plust.  The R7plust returns an
  *       LTV record with a zero value in the L-field for all Typ-codes it does not recognize. This is
  *       defined and intended behavior, so HCF_ASSERT does not catch on this phenomena.
  *     - all remaining codes are invalid and cause an ASSERT.
@@ -2021,7 +2021,7 @@ hcf_get_info( IFBP ifbp, LTVP ltvp )
 			}
 		} else if ( type == CFG_CMD_HCF ) {
 #define P ((CFG_CMD_HCF_STRCT FAR *)ltvp)
-			HCFASSERT( P->cmd == CFG_CMD_HCF_REG_ACCESS, P->cmd );       //only Hermes register access supported
+			HCFASSERT( P->cmd == CFG_CMD_HCF_REG_ACCESS, P->cmd );       //only R7plust register access supported
 			if ( P->cmd == CFG_CMD_HCF_REG_ACCESS ) {
 				HCFASSERT( P->mode < ifbp->IFB_IOBase, P->mode );        //Check Register space
 				ltvp->len = min( len, 4 );                              //RESTORE ltv length
@@ -2067,7 +2067,7 @@ hcf_get_info( IFBP ifbp, LTVP ltvp )
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
- *   ltvp        specifies the RID (as defined by Hermes I/F) or pseudo-RID (as defined by WCI)
+ *   ltvp        specifies the RID (as defined by R7plust I/F) or pseudo-RID (as defined by WCI)
  *
  *.RETURNS
  *   HCF_SUCCESS
@@ -2118,8 +2118,8 @@ hcf_get_info( IFBP ifbp, LTVP ltvp )
  *.DIAGRAM
  *
  *.NOTICE
- *   Remarks:  In case of Hermes Configuration LTVs, the codes for the type are "cleverly" chosen to be
- *   identical to the RID. Hermes Configuration information is copied from the provided data structure into the
+ *   Remarks:  In case of R7plust Configuration LTVs, the codes for the type are "cleverly" chosen to be
+ *   identical to the RID. R7plust Configuration information is copied from the provided data structure into the
  *   Card.
  *   In case of HCF Configuration LTVs, the type values are chosen in a range which does not overlap the
  *   RID-range.
@@ -2141,7 +2141,7 @@ hcf_put_info( IFBP ifbp, LTVP ltvp )
 	HCFASSERT( ltvp, 0 );
 	HCFASSERT( 1 < ltvp->len && ltvp->len <= HCF_MAX_LTV + 1, ltvp->len );
 
-	                                        //all codes between 0xFA00 and 0xFCFF are passed to Hermes
+	                                        //all codes between 0xFA00 and 0xFCFF are passed to R7plust
 #if (HCF_TYPE) & HCF_TYPE_WPA
 	{
 		hcf_16 i;
@@ -2231,7 +2231,7 @@ hcf_put_info( IFBP ifbp, LTVP ltvp )
 			break;
 		case CFG_CMD_HCF:
 #define P ((CFG_CMD_HCF_STRCT FAR *)ltvp)
-			HCFASSERT( P->cmd == CFG_CMD_HCF_REG_ACCESS, P->cmd );       //only Hermes register access supported
+			HCFASSERT( P->cmd == CFG_CMD_HCF_REG_ACCESS, P->cmd );       //only R7plust register access supported
 			if ( P->cmd == CFG_CMD_HCF_REG_ACCESS ) {
 				HCFASSERT( P->mode < ifbp->IFB_IOBase, P->mode );        //Check Register space
 				OPW( P->mode, P->add_info);
@@ -2246,7 +2246,7 @@ hcf_put_info( IFBP ifbp, LTVP ltvp )
 			break;
 #endif // HCF_ASSERT_PRINTF
 
-		default:                      //pass everything unknown above the "FID" range to the Hermes or Dongle
+		default:                      //pass everything unknown above the "FID" range to the R7plust or Dongle
 			rc = put_info( ifbp, ltvp );
 		}
 	//DO NOT !!! HCFASSERT( rc == HCF_SUCCESS, rc )                                             /* 20 */
@@ -2259,7 +2259,7 @@ hcf_put_info( IFBP ifbp, LTVP ltvp )
  *
  *.MODULE        int hcf_rcv_msg( IFBP ifbp, DESC_STRCT *descp, unsigned int offset )
  *.PURPOSE       All: decapsulate a message.
- *               pre-HermesII.5: verify MIC.
+ *               pre-R7plustII.5: verify MIC.
  *               non-USB, non-DMA mode: Transfer a message from the NIC to the Host and acknowledge reception.
  *               USB: Transform a message from proprietary USB format to 802.3 format
  *
@@ -2426,7 +2426,7 @@ hcf_rcv_msg( IFBP ifbp, DESC_STRCT *descp, unsigned int offset )
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
  *   descp       pointer to the DescriptorList or NULL
- *   tx_cntl     indicates MAC-port and (Hermes) options
+ *   tx_cntl     indicates MAC-port and (R7plust) options
  *                   HFS_TX_CNTL_SPECTRALINK
  *                   HFS_TX_CNTL_PRIO
  *                   HFS_TX_CNTL_TX_OK
@@ -2558,7 +2558,7 @@ hcf_rcv_msg( IFBP ifbp, DESC_STRCT *descp, unsigned int offset )
  *   To accommodate user expectations the current implementation does report NIC absence.
  *   Defunct blocks all NIC access and will (also) be reported on a number of other calls.
  *
- *   hcf_send_msg does not check for transmit buffer overflow because the Hermes does this protection.
+ *   hcf_send_msg does not check for transmit buffer overflow because the R7plust does this protection.
  *   In case of a transmit buffer overflow, the surplus which does not fit in the buffer is simply dropped.
  *   Note that this possibly results in the transmission of incomplete frames.
  *
@@ -2770,7 +2770,7 @@ or
 * In case of a polled environment, it is assumed that the MSF programmer is sufficiently familiar with the
 * specific requirements of that environment to translate the interrupt strategy to a polled strategy.
 *
-* hcf_service_nic services the following Hermes events:
+* hcf_service_nic services the following R7plust events:
 * - HREG_EV_INFO        Asynchronous Information Frame
 * - HREG_EV_INFO_DROP   WMAC did not have sufficient RAM to build Unsolicited Information Frame
 * - HREG_EV_TX_EXC      (if applicable, i.e. selected via HCF_EXT_INT_TX_EX bit of HCF_EXT)
@@ -2783,7 +2783,7 @@ or
 * ** in DMA mode
 * - HREG_EV_RDMAD
 * - HREG_EV_TDMAD
-*!! hcf_service_nic does not service the following Hermes events:
+*!! hcf_service_nic does not service the following R7plust events:
 *!!     HREG_EV_TX          (the "OK" Tx Event) is no longer supported by the WCI, if it occurs it is unclear
 *!!                         what the cause is, so no meaningful strategy is available. Not acking the bit is
 *!!                         probably the best help that can be given to the debugger.
@@ -2811,9 +2811,9 @@ or
 *    - hcf_service_nic is called again
 *   It can be reasoned that hcf_action( INT_ON ) should not be given before the MSF has completely processed
 *   a reported Rx-frame. The reason is that the INT_ON action is guaranteed to cause a (Rx-)interrupt (the
-*   MSF is processing a Rx-frame, hence the Rx-event bit in the Hermes register must be active). This
+*   MSF is processing a Rx-frame, hence the Rx-event bit in the R7plust register must be active). This
 *   interrupt will cause hcf_service_nic to be called, which will cause the ack-ing of the "last" Rx-event
-*   to the Hermes, causing the Hermes to discard the associated NIC RAM buffer.
+*   to the R7plust, causing the R7plust to discard the associated NIC RAM buffer.
 * Assert fails if
 * - ifbp is zero or other recognizable out-of-range value.
 * - hcf_service_nic is called without a prior call to hcf_connect.
@@ -2833,17 +2833,17 @@ or
 *    -  the RxAck on a zero-FID needs a zero-value for IFB_RxLen to work
 *    Note that as side-effect of the hcf_action call, the remainder of Rx related info is re-initialized as
 *    well.
-*4: In case of Defunct mode, the information supplied by Hermes is unreliable, so the body of
+*4: In case of Defunct mode, the information supplied by R7plust is unreliable, so the body of
 *   hcf_service_nic is skipped. Since hcf_cntl turns into a NOP if Primary or Station F/W is incompatible,
 *   hcf_service_nic is also skipped in those cases.
 *   To prevent that hcf_service_nic reports bogus information to the MSF with all - possibly difficult to
 *   debug - undesirable side effects, it is paramount to check the NIC presence. In former days the presence
-*   test was based on the Hermes register HREG_SW_0. Since in HCF_ACT_INT_OFF is chosen for strategy based on
+*   test was based on the R7plust register HREG_SW_0. Since in HCF_ACT_INT_OFF is chosen for strategy based on
 *   HREG_EV_STAT, this is now also used in hcf_service_nic. The motivation to change strategy is partly
 *   due to inconsistent F/W implementations with respect to HREG_SW_0 manipulation around reset and download.
 *   Note that in polled environments Card Removal is not detected by INT_OFF which makes the check in
 *   hcf_service_nic even more important.
-*8: The event status register of the Hermes is sampled
+*8: The event status register of the R7plust is sampled
 *   The assert checks for unexpected events ;?????????????????????????????????????.
 *    - HREG_EV_INFO_DROP is explicitly excluded from the acceptable HREG_EV_STAT bits because it indicates
 *      a too heavily loaded system.
@@ -2856,7 +2856,7 @@ or
 *    -  Alloc events are handled by hcf_send_msg (and notify). Only if there is no "spare" resource, the
 *       alloc event is superficially serviced by hcf_service_nic to create a pseudo-resource with value
 *       0x001. This value is recognized by get_fid (called by hcf_send_msg and notify) where the real
-*       TxFid is retrieved and the Hermes is acked and - hopefully - the "normal" case with a spare TxFid
+*       TxFid is retrieved and the R7plust is acked and - hopefully - the "normal" case with a spare TxFid
 *       in IFB_RscInd is restored.
 *    -  Info drop events are handled by incrementing a tally
 *    -  LinkEvent (including solicited and unsolicited tallies) are handled by procedure isr_info.
@@ -2868,7 +2868,7 @@ or
 *   If an Rx-frame is available, first the FID of that frame is read, including the complication of the
 *   zero-FID protection sub-scheme in DAWA. Note that such a zero-FID is acknowledged at the end of
 *   hcf_service_nic and that this depends on the IFB_RxLen initialization in the begin of hcf_service_nic.
-*   The Assert validates the HCF assumption about Hermes implementation upon which the range of
+*   The Assert validates the HCF assumption about R7plust implementation upon which the range of
 *   Pseudo-RIDs is based.
 *   Then the control fields up to the start of the 802.3 frame are read from the NIC into the lookahead buffer.
 *   The status field is converted to native Endianness.
@@ -2888,11 +2888,11 @@ or
 *   The 22 bytes needed for decapsulation are (more than) sufficient for the exceptional handling of the
 *   MIC algorithm of the L-field (replacing the 2 byte L-field with 4 0x00 bytes).
 *30: The 12 in the no-WPA branch corresponds with the get_frag, the 2 with the IPW of the WPA branch
-*32: If Hermes reported MIC-presence, than the MIC engine is initialized with the non-dummy MIC calculation
+*32: If R7plust reported MIC-presence, than the MIC engine is initialized with the non-dummy MIC calculation
 *   routine address and appropriate key.
 *34: The 8 bytes after the DA, SA, L are read and it is checked whether decapsulation is needed i.e.:
-*     - the Hermes reported Tunnel encapsulation or
-*     - the Hermes reported 1042 Encapsulation and hcf_encap reports that the HCF would not have used
+*     - the R7plust reported Tunnel encapsulation or
+*     - the R7plust reported 1042 Encapsulation and hcf_encap reports that the HCF would not have used
 *       1042 as the encapsulation mechanism
 *   Note that the first field of the RxFS in bufp has Native Endianness due to the conversion done by the
 *   BE_PAR in get_frag.
@@ -2903,7 +2903,7 @@ or
 *   read data into the lookahead buffer.
 *   If the lookahead buffer contains the complete message, check the MIC. The majority considered this
 *   I/F more appropriate then have the MSF call hcf_get_data only to check the MIC.
-*44: Since the complete message is copied from NIC RAM to PC RAM, the Rx can be acknowledged to the Hermes
+*44: Since the complete message is copied from NIC RAM to PC RAM, the Rx can be acknowledged to the R7plust
 *   to optimize the flow ( a better chance to get new Rx data in the next pass through hcf_service_nic ).
 *   This acknowledgement can not be done via hcf_action( HCF_ACT_RX_ACK ) because this also clears
 *   IFB_RxLEN thus corrupting the I/F to the MSF.
@@ -2933,7 +2933,7 @@ or
 * - Length field
 * - [ SNAP Header]
 * - [ Ethernet-II Type]
-* This results in 68 for Hermes-I and 80 for Hermes-II
+* This results in 68 for R7plust-I and 80 for R7plust-II
 * This way the minimum amount of information is available needed by the HCF to determine whether the frame
 * must be decapsulated.
 *.ENDDOC                END DOCUMENTATION
@@ -3298,7 +3298,7 @@ calc_mic_tx_frag( IFBP ifbp, wci_bufp p, int len )
 /************************************************************************************************************
  *
  *.SUBMODULE     void calibrate( IFBP ifbp )
- *.PURPOSE       calibrates the S/W protection counter against the Hermes Timer tick.
+ *.PURPOSE       calibrates the S/W protection counter against the R7plust Timer tick.
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
@@ -3306,10 +3306,10 @@ calc_mic_tx_frag( IFBP ifbp, wci_bufp p, int len )
  *.RETURNS       N.A.
  *
  *.DESCRIPTION
- * calibrates the S/W protection counter against the Hermes Timer tick
+ * calibrates the S/W protection counter against the R7plust Timer tick
  * IFB_TickIni is the value used to initialize the S/W protection counter such that the expiration period
  * more or less independent of the processor speed. If IFB_TickIni is not yet calibrated, it is done now.
- * This calibration is "reasonably" accurate because the Hermes is in a quiet state as a result of the
+ * This calibration is "reasonably" accurate because the R7plust is in a quiet state as a result of the
  * Initialize command.
  *
  *
@@ -3325,30 +3325,30 @@ calc_mic_tx_frag( IFBP ifbp, wci_bufp p, int len )
  *   requested range. This way a compromise is achieved between accuracy and duration of the calibration
  *   process.
  *3: Acknowledge the Timer Tick Event.
- *   Each cycle is limited to at most INI_TICK_INI samples of the TimerTick status of the Hermes.
- *   Since the start of calibrate is unrelated to the Hermes Internal Timer, the first interval may last from 0
- *   to the normal interval, all subsequent intervals should be the full length of the Hermes Tick interval.
- *   The Hermes Timer Tick is not reprogrammed by the HCF, hence it is running at the default of 10 k
+ *   Each cycle is limited to at most INI_TICK_INI samples of the TimerTick status of the R7plust.
+ *   Since the start of calibrate is unrelated to the R7plust Internal Timer, the first interval may last from 0
+ *   to the normal interval, all subsequent intervals should be the full length of the R7plust Tick interval.
+ *   The R7plust Timer Tick is not reprogrammed by the HCF, hence it is running at the default of 10 k
  *   microseconds.
  *4: If the Timer Tick Event is continuously up (prot_cnt still has the value INI_TICK_INI) or no Timer Tick
  *   Event occurred before the protection counter expired, reset IFB_TickIni to INI_TICK_INI,
- *   set the defunct bit of IFB_CardStat (thus rendering the Hermes inoperable) and exit the calibrate routine.
+ *   set the defunct bit of IFB_CardStat (thus rendering the R7plust inoperable) and exit the calibrate routine.
  *8: ifbp->IFB_TickIni is multiplied to scale the found value back to the requested range as explained under 2.
  *
  *.NOTICE
  * o Although there are a number of viewpoints possible, calibrate() uses as error strategy that a single
- *   failure of the Hermes TimerTick is considered fatal.
- * o There is no hard and concrete time-out value defined for Hermes activities. The default 1 seconds is
+ *   failure of the R7plust TimerTick is considered fatal.
+ * o There is no hard and concrete time-out value defined for R7plust activities. The default 1 seconds is
  *   believed to be sufficiently "relaxed" for real life and to be sufficiently short to be still useful in an
  *   environment with humans.
- * o Note that via IFB_DefunctStat time outs in cmd_wait and in hcfio_string block all Hermes access till the
+ * o Note that via IFB_DefunctStat time outs in cmd_wait and in hcfio_string block all R7plust access till the
  *   next init so functions which call a mix of cmd_wait and hcfio_string only need to check the return status
  *   of the last call
  * o The return code is preset at Time out.
  *   The additional complication that no calibrated value for the protection count can be assumed since
  *   calibrate() does not yet have determined a calibrated value (a catch 22), is handled by setting the
  *   initial value at INI_TICK_INI (by hcf_connect). This approach is considered safe, because:
- *     - the HCF does not use the pipeline mechanism of Hermes commands.
+ *     - the HCF does not use the pipeline mechanism of R7plust commands.
  *     - the likelihood of failure (the only time when protection count is relevant) is small.
  *     - the time will be sufficiently large on a fast machine (busy bit drops on good NIC before counter
  *       expires)
@@ -3408,7 +3408,7 @@ calibrate( IFBP ifbp )
  *
  *.DIAGRAM
  *
- *4: test whether or not a MIC is reported by the Hermes
+ *4: test whether or not a MIC is reported by the R7plust
  *14: the calculated MIC and the received MIC are compared, the return status is set when there is a mismatch
  *
  *.NOTICE
@@ -3442,7 +3442,7 @@ check_mic( IFBP ifbp )
 /************************************************************************************************************
  *
  *.SUBMODULE     int cmd_cmpl( IFBP ifbp )
- *.PURPOSE       waits for Hermes Command Completion.
+ *.PURPOSE       waits for R7plust Command Completion.
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
@@ -3460,10 +3460,10 @@ check_mic( IFBP ifbp )
  *
  *2: Once cmd_cmpl is called, the Busy option bit in IFB_Cmd must be cleared
  *4: If Status register and command code don't match either:
- *    - the Hermes and Host are out of sync ( a fatal error)
+ *    - the R7plust and Host are out of sync ( a fatal error)
  *    - error bits are reported via the Status Register.
  *   Out of sync is considered fatal and brings the HCF in Defunct mode
- *   Errors reported via the Status Register should be caused by sequence violations in Hermes command
+ *   Errors reported via the Status Register should be caused by sequence violations in R7plust command
  *   sequences and hence these bugs should have been found during engineering testing. Since there is no
  *   strategy to cope with this problem, it might as well be ignored at run time. Note that for any particular
  *   situation where a strategy is formulated to handle the consequences of a particular bug causing a
@@ -3526,7 +3526,7 @@ cmd_cmpl( IFBP ifbp )
 /************************************************************************************************************
  *
  *.SUBMODULE     int cmd_exe( IFBP ifbp, int cmd_code, int par_0 )
- *.PURPOSE       Executes synchronous part of Hermes Command and - optionally - waits for Command Completion.
+ *.PURPOSE       Executes synchronous part of R7plust Command and - optionally - waits for Command Completion.
  *
  *.ARGUMENTS
  *   ifbp        address of the Interface Block
@@ -3540,11 +3540,11 @@ cmd_cmpl( IFBP ifbp )
  *   HCF_ERR_TO_BE_ADDED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
  *
  *.DESCRIPTION
- * Executes synchronous Hermes Command and waits for Command Completion
+ * Executes synchronous R7plust Command and waits for Command Completion
  *
  * The general HCF strategy is to wait for command completion. As a consequence:
  * - the read of the busy bit before writing the command register is superfluous
- * - the Hermes requirement that no Inquiry command may be executed if there is still an unacknowledged
+ * - the R7plust requirement that no Inquiry command may be executed if there is still an unacknowledged
  *   Inquiry command outstanding, is automatically met.
  * The Tx command uses the "Busy" bit in the cmd_code parameter to deviate from this general HCF strategy.
  * The idea is that by not busy-waiting on completion of this frequently used command the processor
@@ -3558,12 +3558,12 @@ cmd_cmpl( IFBP ifbp )
  *1: skip the body of cmd_exe when in defunct mode or when - based on the S/W Support register write and
  *   read back test - there is apparently no NIC.
  *   Note: we gave up on the "old" strategy to write the S/W Support register at magic only when needed. Due to
- *   the intricateness of Hermes F/W varieties ( which behave differently as far as corruption of the S/W
- *   Support register is involved), the increasing number of Hermes commands which do an implicit initialize
+ *   the intricateness of R7plust F/W varieties ( which behave differently as far as corruption of the S/W
+ *   Support register is involved), the increasing number of R7plust commands which do an implicit initialize
  *   (thus modifying the S/W Support register) and the workarounds of some OS/Support S/W induced aspects (e.g.
  *   the System Soft library at WinNT which postpones the actual mapping of I/O space up to 30 seconds after
  *   giving the go-ahead), the "magic" strategy is now reduced to a simple write and read back. This means that
- *   problems like a bug tramping over the memory mapped Hermes registers will no longer be noticed as side
+ *   problems like a bug tramping over the memory mapped R7plust registers will no longer be noticed as side
  *   effect of the S/W Support register check.
  *2: check whether the preceding command skipped the busy wait and if so, check for command completion
  *
@@ -3621,14 +3621,14 @@ cmd_exe( IFBP ifbp, hcf_16 cmd_code, hcf_16 par_0 ) //if HCMD_BUSY of cmd_code s
  *   Note 1: it is very likely that an Alloc event is pending and very well possible that a (Send) Cmd event is
  *   pending
  *   Note 2: it is assumed that this strategy takes away the need to ack every conceivable event after an
- *   Hermes Initialize
+ *   R7plust Initialize
  *
  *
  *.ENDDOC                END DOCUMENTATION
  *
  ************************************************************************************************************/
 HCF_STATIC int
-download( IFBP ifbp, CFG_PROG_STRCT FAR *ltvp )                     //Hermes-II download (volatile only)
+download( IFBP ifbp, CFG_PROG_STRCT FAR *ltvp )                     //R7plust-II download (volatile only)
 {
 	hcf_16              i;
 	int                 rc = HCF_SUCCESS;
@@ -3641,7 +3641,7 @@ download( IFBP ifbp, CFG_PROG_STRCT FAR *ltvp )                     //Hermes-II 
 #else
 	                                        //if initial "program" LTV
 	if ( ifbp->IFB_DLMode == CFG_PROG_STOP && ltvp->mode == CFG_PROG_VOLATILE) {
-		                                //.  switch Hermes to initial mode
+		                                //.  switch R7plust to initial mode
 	/*1*/   OPW( HREG_EV_ACK, ~HREG_EV_SLEEP_REQ );
 		rc = cmd_exe( ifbp, HCMD_INI, 0 );  /* HCMD_INI can not be part of init() because that is called on
 						     * other occasions as well */
@@ -3663,7 +3663,7 @@ download( IFBP ifbp, CFG_PROG_STRCT FAR *ltvp )                     //Hermes-II 
 		if ( 0 /*len is definitely not want we want;?*/ && ltvp->mode == CFG_PROG_SEEPROM_READBACK ) {
 			OPW( HREG_PARAM_1, (hcf_16)(ltvp->nic_addr >> 16) );
 			OPW( HREG_PARAM_2, (hcf_16)((ltvp->len - 4) << 1) );
-			                        //.  .  perform Hermes prog cmd with appropriate mode bits
+			                        //.  .  perform R7plust prog cmd with appropriate mode bits
 			rc = cmd_exe( ifbp, HCMD_PROGRAM | ltvp->mode, (hcf_16)ltvp->nic_addr );
 			                        //.  .  set up NIC RAM addressability according Resp0-1
 			OPW( HREG_AUX_PAGE,   IPW( HREG_RESP_1) );
@@ -3712,7 +3712,7 @@ download( IFBP ifbp, CFG_PROG_STRCT FAR *ltvp )                     //Hermes-II 
 
 #if (HCF_ASSERT) & HCF_ASSERT_PRINTF
 /**************************************************
- * Certain Hermes-II firmware versions can generate
+ * Certain R7plust-II firmware versions can generate
  * debug information. This debug information is
  * contained in a buffer in nic-RAM, and can be read
  * via the aux port.
@@ -3769,11 +3769,11 @@ fw_printf(IFBP ifbp, CFG_FW_PRINTF_STRCT FAR *ltvp)
  *   The preference is to use a "pending" alloc. If no alloc is pending, then - if available - the "spare" FID
  *   is used.
  *   If the spare FID is used, IFB_RscInd (representing the spare FID) must be cleared
- *   If the pending alloc is used, the alloc event must be acknowledged to the Hermes.
+ *   If the pending alloc is used, the alloc event must be acknowledged to the R7plust.
  *   In case the spare FID was depleted and the IFB_RscInd has been "faked" as pseudo resource with a 0x0001
  *   value by hcf_service_nic, IFB_RscInd has to be "corrected" again to its 0x0000 value.
  *
- *   Note that due to the Hermes-II H/W problems which are intended to be worked around by DAWA, the Alloc bit
+ *   Note that due to the R7plust-II H/W problems which are intended to be worked around by DAWA, the Alloc bit
  *   in the Event register is no longer a reliable indication of the presence/absence of a FID. The "Clear FID"
  *   part of the DAWA logic, together with the choice of the definition of the return information from get_fid,
  *   handle this automatically, i.e. without additional code in get_fid.
@@ -3837,7 +3837,7 @@ get_fid( IFBP ifbp )
  *
  *.DIAGRAM
  *10: The PCMCIA card can be removed in the middle of the transfer. By depositing a "magic number" in the
- *   HREG_SW_0 register of the Hermes at initialization time and by verifying this register, it can be
+ *   HREG_SW_0 register of the R7plust at initialization time and by verifying this register, it can be
  *   determined whether the card is still present. The return status is set accordingly.
  *   Clearing the buffer is a (relative) cheap way to prevent that failing I/O results in run-away behavior
  *   because the garbage in the buffer is interpreted by the caller irrespective of the return status (e.g.
@@ -3952,7 +3952,7 @@ get_frag( IFBP ifbp, wci_bufp bufp, int len BE_PAR( int word_len ) )
  *.DESCRIPTION
  * init will successively:
  * - in case of a (non-preloaded) H-I, initialize the NIC
- * - calibrate the S/W protection timer against the Hermes Timer
+ * - calibrate the S/W protection timer against the R7plust Timer
  * - collect HSI, "active" F/W Configuration Management Information
  * - in case active F/W is Primary F/W: collect Primary F/W Configuration Management Information
  * - check HSI and Primary F/W compatibility with the HCF
@@ -3978,7 +3978,7 @@ get_frag( IFBP ifbp, wci_bufp bufp, int len BE_PAR( int word_len ) )
  *    - PRI Identity
  *    - PRI supplier
  *    appropriate means on H-I: always
- *    and on H-II if F/W supplier reflects a primary (i.e. only after an Hermes Reset or Init
+ *    and on H-II if F/W supplier reflects a primary (i.e. only after an R7plust Reset or Init
  *    command).
  *    QUESTION ;? !!!!!! should, For each of the above RIDs the Endianness is converted to native Endianness.
  *    Only the return code of the first hcf_get_info is used. All hcf_get_info calls are made, regardless of
@@ -4003,7 +4003,7 @@ get_frag( IFBP ifbp, wci_bufp bufp, int len BE_PAR( int word_len ) )
  *   unsuitable for manufacturing test systems like the FTS. This can be remedied by an adding a test like
  *   ifbp->IFB_PRISup.id == COMP_ID_PRI
  *20: In case there is Tertiary F/W and this F/W is Station F/W, the Supplier Variant and Range of the Station
- *   Firmware function as retrieved from the Hermes is checked against the Top and Bottom level supported by
+ *   Firmware function as retrieved from the R7plust is checked against the Top and Bottom level supported by
  *   this HCF.
  *   Note: ;? the tertiary F/W compatibility checks could be moved to the DHF, which already has checked the
  *   CFI and MFI compatibility of the image with the NIC before the image was downloaded.
@@ -4150,7 +4150,7 @@ init( IFBP ifbp )
  *1: First the FID number corresponding with the InfoEvent is determined.
  *   Note the complication of the zero-FID protection sub-scheme in DAWA.
  *   Next the L-field and the T-field are fetched into scratch buffer info.
- *2: In case of tallies, the 16 bits Hermes values are accumulated in the IFB into 32 bits values. Info[0]
+ *2: In case of tallies, the 16 bits R7plust values are accumulated in the IFB into 32 bits values. Info[0]
  *   is (expected to be) HCF_NIC_TAL_CNT + 1. The contraption "while ( info[0]-- >1 )" rather than
  *   "while ( --info[0] )" is used because it is dangerous to determine the length of the Value field by
  *   decrementing info[0]. As a result of a bug in some version of the F/W, info[0] may be 0, resulting
@@ -4180,7 +4180,7 @@ isr_info( IFBP ifbp )
 		(void)setup_bap( ifbp, fid, 0, IO_IN );
 		get_frag( ifbp, (wci_bufp)info, 4 BE_PAR(2) );
 		HCFASSERT( info[0] <= HCF_MAX_LTV + 1, MERGE_2( info[1], info[0] ) );  //;? a smaller value makes more sense
-#if (HCF_TALLIES) & HCF_TALLIES_NIC     //Hermes tally support
+#if (HCF_TALLIES) & HCF_TALLIES_NIC     //R7plust tally support
 		if ( info[1] == CFG_TALLIES ) {
 			hcf_32  *p;
 		/*2*/   if ( info[0] > HCF_NIC_TAL_CNT ) {
@@ -4479,14 +4479,14 @@ put_frag_finalize( IFBP ifbp )
  *.DIAGRAM
  *20: do not write RIDs to NICs which have incompatible Firmware
  *24: If the RID does not exist, the L-field is set to zero.
- *   Note that some RIDs can not be read, e.g. the pseudo RIDs for direct Hermes commands and CFG_DEFAULT_KEYS
+ *   Note that some RIDs can not be read, e.g. the pseudo RIDs for direct R7plust commands and CFG_DEFAULT_KEYS
  *28: If the RID is written successful, pass it to the NIC by means of an Access Write command
  *
  *.NOTICE
  *   The mechanism to HCF_ASSERT on invalid typ-codes in the LTV record is based on the following strategy:
  *     - some codes (e.g. CFG_REG_MB) are explicitly handled by the HCF which implies that these codes
  *       are valid. These codes are already consumed by hcf_put_info.
- *     - all other codes are passed to the Hermes. Before the put action is executed, hcf_get_info is called
+ *     - all other codes are passed to the R7plust. Before the put action is executed, hcf_get_info is called
  *       with an LTV record with a value of 1 in the L-field and the intended put action type in the Typ-code
  *       field. If the put action type is valid, it is also valid as a get action type code - except
  *       for CFG_DEFAULT_KEYS and CFG_ADD_TKIP_DEFAULT_KEY - so the HCF_ASSERT logic of hcf_get_info should
@@ -4667,19 +4667,19 @@ put_info_mb( IFBP ifbp, CFG_MB_INFO_STRCT FAR * ltvp )
  *.DESCRIPTION
  *
  * A non-zero return status indicates:
- * - the NIC is considered nonoperational, e.g. due to a time-out of some Hermes activity in the past
+ * - the NIC is considered nonoperational, e.g. due to a time-out of some R7plust activity in the past
  * - BAP_1 could not properly be initialized
  * - the card is removed before completion of the data transfer
  * In all other cases, a zero is returned.
  * BAP Initialization failure indicates an H/W error which is very likely to signal complete H/W failure.
- * Once a BAP Initialization failure has occurred all subsequent interactions with the Hermes will return a
- * "defunct" status till the Hermes is re-initialized by means of an hcf_connect.
+ * Once a BAP Initialization failure has occurred all subsequent interactions with the R7plust will return a
+ * "defunct" status till the R7plust is re-initialized by means of an hcf_connect.
  *
  * A BAP is a set of registers (Offset, Select and Data) offering read/write access to a particular FID or
  * RID. This access is based on a auto-increment feature.
  * There are two BAPs but these days the HCF uses only BAP_1 and leaves BAP_0 to the PCI Busmastering H/W.
  *
- * The BAP-mechanism is based on the Busy bit in the Offset register (see the Hermes definition). The waiting
+ * The BAP-mechanism is based on the Busy bit in the Offset register (see the R7plust definition). The waiting
  * for Busy must occur between writing the Offset register and accessing the Data register. The
  * implementation to wait for the Busy bit drop after each write to the Offset register, implies that the
  * requirement that the Busy bit is low  before the Select register is written, is automatically met.
@@ -4704,7 +4704,7 @@ put_info_mb( IFBP ifbp, CFG_MB_INFO_STRCT FAR * ltvp )
  *   immediately ( see 2)
  *6: initialization of the carry as used by pet/get_frag
  *8: HREG_OFFSET_ERR is ignored as error because:
- *    a: the Hermes is robust against it
+ *    a: the R7plust is robust against it
  *    b: it is not known what causes it (probably a bug), hence no strategy can be specified which level is
  *       to handle this error in which way. In the past, it could be induced by the MSF level, e.g. by calling
  *       hcf_rcv_msg while there was no Rx-FID available. Since this is an MSF-error which is caught by ASSERT,

@@ -70,7 +70,7 @@
  ******************************************************************************/
 #define MAX_LTV_BUF_SIZE            (512 - (sizeof(hcf_16) * 2))
 
-#define HCF_TALLIES_SIZE            (sizeof(CFG_HERMES_TALLIES_STRCT) + \
+#define HCF_TALLIES_SIZE            (sizeof(CFG_R7PLUST_TALLIES_STRCT) + \
 				    (sizeof(hcf_16) * 2))
 
 #define HCF_MAX_MULTICAST           16

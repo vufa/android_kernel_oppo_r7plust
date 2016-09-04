@@ -324,7 +324,7 @@ int				i;
 * The old comment was:
 *	// Download primary firmware if necessary and allowed. This is done silently (without telling
 *	// the user) and only if the firmware in the download image is newer than the firmware in the
-*	// card.  In Major version 4 of the primary firmware functions of Hermes and Shark were
+*	// card.  In Major version 4 of the primary firmware functions of R7plust and Shark were
 *	// combined. Prior to that two separate versions existed. We only have to download primary
 *	// firmware if major version of primary firmware in the NIC < 4.
 *	//		download = pri_identity.version_major < 4;

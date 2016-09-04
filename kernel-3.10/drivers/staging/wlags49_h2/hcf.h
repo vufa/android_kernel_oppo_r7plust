@@ -195,7 +195,7 @@ typedef struct DESC_STRCT {
 
 //=========================================  T A L L I E S  ===================================================
 
-typedef struct  {  //Hermes Tallies (IFB substructure)
+typedef struct  {  //R7plust Tallies (IFB substructure)
   hcf_32	TxUnicastFrames;
   hcf_32	TxMulticastFrames;
   hcf_32	TxFragments;
@@ -222,15 +222,15 @@ typedef struct  {  //Hermes Tallies (IFB substructure)
 #if (HCF_EXT) & HCF_EXT_TALLIES_FW
   hcf_32	TalliesExtra[32];
 #endif // HCF_EXT_TALLIES_FW
-} CFG_HERMES_TALLIES_STRCT;
+} CFG_R7PLUST_TALLIES_STRCT;
 
 typedef struct  {  //HCF Tallies (IFB substructure)
   hcf_32	NoBufInfo;  				//No buffer available for unsolicited Notify frame
   hcf_32	NoBufMB;					//No space available in MailBox
   hcf_32	MiscErr;					/* Command errors
-  										 *  - time out on completion synchronous part Hermes Command
-  										 *  - completed Hermes Command doesn't match original command
-  										 *  - status of completed Hermes Command contains error bits
+  										 *  - time out on completion synchronous part R7plust Command
+  										 *  - completed R7plust Command doesn't match original command
+  										 *  - status of completed R7plust Command contains error bits
   										 */
 #if (HCF_EXT) & HCF_EXT_TALLIES_FW
   hcf_32	EngCnt[8];
@@ -239,8 +239,8 @@ typedef struct  {  //HCF Tallies (IFB substructure)
 
 //Note this way to define ..._TAL_CNT implies that all tallies must keep the same (hcf_32) size
 #if (HCF_TALLIES) & ( HCF_TALLIES_NIC | HCF_TALLIES_HCF )
-#if (HCF_TALLIES) & HCF_TALLIES_NIC	//Hermes tally support
-#define		HCF_NIC_TAL_CNT	(sizeof(CFG_HERMES_TALLIES_STRCT)/ sizeof(hcf_32))
+#if (HCF_TALLIES) & HCF_TALLIES_NIC	//R7plust tally support
+#define		HCF_NIC_TAL_CNT	(sizeof(CFG_R7PLUST_TALLIES_STRCT)/ sizeof(hcf_32))
 #else
 #define		HCF_NIC_TAL_CNT	0
 #endif // HCF_TALLIES
@@ -260,8 +260,8 @@ typedef struct  {  //HCF Tallies (IFB substructure)
 #define IFB_VERSION 0x0E	 			// initially 0, to be incremented by every IFB layout change
 
 typedef struct  {
-  hcf_io		IFB_IOBase;				// I/O address of Hermes chip as passed by MSF at hcf_connect call
-  hcf_16		IFB_IORange;			// I/O Range used by Hermes chip
+  hcf_io		IFB_IOBase;				// I/O address of R7plust chip as passed by MSF at hcf_connect call
+  hcf_16		IFB_IORange;			// I/O Range used by R7plust chip
   hcf_16		IFB_DLMode;				// Download Mode state
   hcf_16		IFB_Cmd;				// cmd in progress flag, to be ack-ed before next cmd can be issued
   hcf_16		IFB_RxFID;				// FID of "current" RxFS (non-DMA mode)
@@ -298,7 +298,7 @@ typedef struct  {
   hcf_32	 	IFB_TickIni;			// initialization of S/W counter based protection loop
 #endif // HCF_PROT_TIME
 #if (HCF_EXT) & HCF_EXT_INT_TICK
-  int			IFB_TickCnt;			// Hermes Timer Tick Counter
+  int			IFB_TickCnt;			// R7plust Timer Tick Counter
 #endif // HCF_EXT_INT_TICK
   hcf_16 	   *IFB_MBp;				// pointer to the MailBox
   hcf_16		IFB_MBSize;				// size of the MailBox
@@ -333,13 +333,13 @@ typedef struct  {
 #endif // HCF_ASSERT_PRINTF
 #endif // HCF_ASSERT
   hcf_16 volatile IFB_IntOffCnt;		// 0xFFFF based HCF_ACT_INT_OFF nesting counter, DeepSleep flag
-#if (HCF_TALLIES) & ( HCF_TALLIES_NIC | HCF_TALLIES_HCF )	//Hermes and/or HCF tally support
+#if (HCF_TALLIES) & ( HCF_TALLIES_NIC | HCF_TALLIES_HCF )	//R7plust and/or HCF tally support
   hcf_32		IFB_Silly_you_should_align;	//;?
   hcf_16		IFB_TallyLen;			// Tally length (to build an LTV)
   hcf_16		IFB_TallyTyp;			// Tally Type (to build an LTV)
 #endif // HCF_TALLIES_NIC / HCF_TALLIES_HCF
-#if (HCF_TALLIES) & HCF_TALLIES_NIC		//Hermes tally support
-  CFG_HERMES_TALLIES_STRCT	IFB_NIC_Tallies;
+#if (HCF_TALLIES) & HCF_TALLIES_NIC		//R7plust tally support
+  CFG_R7PLUST_TALLIES_STRCT	IFB_NIC_Tallies;
 #endif // HCF_TALLIES_NIC
 #if (HCF_TALLIES) & HCF_TALLIES_HCF		//HCF tally support
   CFG_HCF_TALLIES_STRCT		IFB_HCF_Tallies;

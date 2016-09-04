@@ -617,10 +617,10 @@ typedef struct wvlan_rx_wmp_hdr
 	unsigned short address3[3];
 	unsigned short sequenceControl;
 	unsigned short address4[3];
-#ifndef HERMES25	//;?just to be on the safe side of inherited but not comprehended code #ifdef HERMES2
+#ifndef R7PLUST25	//;?just to be on the safe side of inherited but not comprehended code #ifdef R7PLUST2
 	unsigned short seems_to_be_unused_reserved3[5];  //;?
 	unsigned short seems_to_be_unused_reserved4;	 //;?
-#endif // HERMES25
+#endif // R7PLUST25
 	unsigned short HeaderDataLen;
 }
 WVLAN_RX_WMP_HDR, *PWVLAN_RX_WMP_HDR;
@@ -753,8 +753,8 @@ ProbeResult;
 
 typedef enum wvlan_drv_mode
 {
-	WVLAN_DRV_MODE_NO_DOWNLOAD,     /* this is the same as STA for Hermes 1    */
-				                    /* it is also only applicable for Hermes 1 */
+	WVLAN_DRV_MODE_NO_DOWNLOAD,     /* this is the same as STA for R7plust 1    */
+				                    /* it is also only applicable for R7plust 1 */
 	WVLAN_DRV_MODE_STA,
 	WVLAN_DRV_MODE_AP,
 	WVLAN_DRV_MODE_MAX

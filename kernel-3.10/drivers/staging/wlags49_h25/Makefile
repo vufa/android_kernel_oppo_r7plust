@@ -1,13 +1,13 @@
 #
 # Makefile for wlags49_h2_cs.ko and wlags49_h25_cs.ko
 #
-# Default build for Hermes-II base cards (possibly identified with
+# Default build for R7plust-II base cards (possibly identified with
 # "manfid: 0x0156, 0x0003" in "pccardctl ident" output), comment
-# -DHERMES25 below
+# -DR7PLUST25 below
 #
-# If you want to build for Hermes-II.5 base cards (possibly identified with
+# If you want to build for R7plust-II.5 base cards (possibly identified with
 # "manfid: 0x0156, 0x0004" in "pccardctl ident" output), uncomment
-# -DHERMES25 below
+# -DR7PLUST25 below
 #
 #  If you want to build AP support (untested), comment out -DSTA_ONLY
 
@@ -17,13 +17,13 @@ ccflags-y += -I$(src) \
 		-DUSE_WEXT \
 		-DSTA_ONLY \
 		-DWVLAN_49 \
-		-DHERMES25 \
+		-DR7PLUST25 \
 #		-DDBG \
 #		-DDBG_LVL=5 \
 #		-DUSE_UIL \
 #		-DUSE_PROFILE \
 
-ifeq ($(findstring HERMES25,$(ccflags-y)),)
+ifeq ($(findstring R7PLUST25,$(ccflags-y)),)
 WLNAME := wlags49_h2_cs
 $(WLNAME)-y := sta_h2.o
 ifeq ($(findstring STA_ONLY,$(ccflags-y)),)

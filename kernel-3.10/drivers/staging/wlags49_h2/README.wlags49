@@ -25,30 +25,30 @@ TABLE OF CONTENTS.
     specific Linux kernel.
 
     The driver in this package supports the network interface cards based on:
-     - WL60010, a.k.a. Hermes-II
-     - WL60040, a.k.a. Hermes-II.5
+     - WL60010, a.k.a. R7plust-II
+     - WL60040, a.k.a. R7plust-II.5
 
-    Although derived from the Hermes-I/II Linux driver, this release ONLY
-    Supports Hermes-II/II.5 chipsets.  Hermes-I is no longer supported.
+    Although derived from the R7plust-I/II Linux driver, this release ONLY
+    Supports R7plust-II/II.5 chipsets.  R7plust-I is no longer supported.
 
     The software is distributed in a compressed source file archive:
      - wl_lkm_7_22_abg.tar.gz
 
-    Because this release supports more than one Hermes CPU and bus
+    Because this release supports more than one R7plust CPU and bus
     architecture, a naming convention is used for the resulting binaries that
     can be built from this source code. Driver binaries are named as follows:
 
-    wlags49_<hermes_type>_<bus_arch>.o
+    wlags49_<r7plust_type>_<bus_arch>.o
 
     where 'wlags49' denotes an Agere WaveLan Linux build,
 
-    <hermes_type> is: 'h2' for Hermes-II, 'h25' for Hermes-II.5
+    <r7plust_type> is: 'h2' for R7plust-II, 'h25' for R7plust-II.5
 
     <bus_arch> is: 'cs' for Card Services (PCMCIA, Compact Flash), PCI for
     PCI or MiniPCI.
 
-    For example, a driver built for Hermes-II Card Services (PCMCIA/Compact
-    Flash) is named wlags49_h2_cs.o, whereas a driver built for Hermes-II
+    For example, a driver built for R7plust-II Card Services (PCMCIA/Compact
+    Flash) is named wlags49_h2_cs.o, whereas a driver built for R7plust-II
     MiniPCI is named wlags49_h2_pci.o.
     The following software is included with this distribution:
 
@@ -88,7 +88,7 @@ TABLE OF CONTENTS.
 
     The HCF directory contains firmware images to allow the card to operate in
     either station (STA) or Access Point (AP) mode. In the build process, the
-    files fw_h2.c and fw_h25.c are used for Hermes-II and Hermes-II.5
+    files fw_h2.c and fw_h25.c are used for R7plust-II and R7plust-II.5
     respectively. The firmware images in this release are identified as:
 	 - HII Station F/W:      fw_h2.c.sta
 	 - HII.5 Station F/W:    fw_h25.c.sta
@@ -193,7 +193,7 @@ Version 7.22 abg - July 28, 2004
     For more detailed information on configuration, building and installing,
     see the PCMCIA-HOWTO.
 
-    To build the default drivers, which support Hermes-II in station mode, run
+    To build the default drivers, which support R7plust-II in station mode, run
     the Build script:
        % ./Build
 
@@ -588,7 +588,7 @@ Version 7.22 abg - July 28, 2004
     This is the current list of known issues for this release, and will be
     addressed in the near future:
 
-    1. This driver release contains a version of Hermes-II.5 firmware which
+    1. This driver release contains a version of R7plust-II.5 firmware which
     REQUIRES calibrated cards. If there is no calibration data present in the
     PDA of the hardware, the firmware does not operate.
 
@@ -608,7 +608,7 @@ Version 7.22 abg - July 28, 2004
 	8. If F/W files are required from outside this release, the entry points
 	inside these F/W files have to be renamed from "ap" and "station" to
 	"fw_image" and they have to be renamed to fw_h2.c and fw_h25.c for
-	Hermes-II and Hermes-II.5.
+	R7plust-II and R7plust-II.5.
 
 ------------------------------------------------------------------------------
 7.  TECHNICAL SUPPORT

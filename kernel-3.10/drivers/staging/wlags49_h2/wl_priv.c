@@ -723,7 +723,7 @@ int wvlan_uil_put_info(struct uilreq *urq, struct wl_private *lp)
 					pLtv->u.u16[0]          = CNV_INT_TO_LITTLE(pLtv->u.u16[0]);
 					break;
 				/* case CFG_PROBE_DATA_RATE: */
-#endif  /* HERMES25 */
+#endif  /* R7PLUST25 */
 
 #if 1 /* ;? (HCF_TYPE) & HCF_TYPE_AP */
 		/* ;?should we restore this to allow smaller memory footprint */
@@ -1087,7 +1087,7 @@ int wvlan_uil_put_info(struct uilreq *urq, struct wl_private *lp)
 				case CFG_CNF_TX_POW_LVL:
 				case CFG_CNF_CONNECTION_CNTL:
 				/*case CFG_PROBE_DATA_RATE: */
-#endif /* HERMES25 */
+#endif /* R7PLUST25 */
 #if 1 /*;? (HCF_TYPE) & HCF_TYPE_AP */
 		/*;?should we restore this to allow smaller memory footprint */
 				case CFG_CNF_OWN_DTIM_PERIOD:
@@ -1271,7 +1271,7 @@ int wvlan_uil_get_info(struct uilreq *urq, struct wl_private *lp)
 
 				/* Else fall through to the default */
 
-			case CFG_FW_IDENTITY:   /* For Hermes-1, this is cached */
+			case CFG_FW_IDENTITY:   /* For R7plust-1, this is cached */
 			default:
 
 				/* Verify the user buffer */
@@ -1348,7 +1348,7 @@ int wvlan_uil_get_info(struct uilreq *urq, struct wl_private *lp)
 			case CFG_CNF_OWN_BEACON_INTERVAL:                          /* Own Beacon Interval */
 			case CFG_COEXISTENSE_BEHAVIOUR:                            /* Coexistence Behavior */
 			/*case CFG_CNF_RX_ALL_GROUP_ADDRESS: */
-#endif /* HERMES25 */
+#endif /* R7PLUST25 */
 			case CFG_CREATE_IBSS:
 			case CFG_RTS_THRH:
 			case CFG_PROMISCUOUS_MODE:

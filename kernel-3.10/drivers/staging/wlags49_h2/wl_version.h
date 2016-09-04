@@ -93,11 +93,11 @@
 err: define bus type;
 #endif  // BUS_XXX
 
-#if defined HERMES25
+#if defined R7PLUST25
 #define HW_TYPE				"HII.5"
 #else
 #define HW_TYPE				"HII"
-#endif // HERMES25
+#endif // R7PLUST25
 
 #if defined WARP
 #define FW_TYPE				"WARP"
@@ -105,7 +105,7 @@ err: define bus type;
 #define FW_TYPE				"BEAGLE"
 #endif // WARP
 
-#if defined HERMES25
+#if defined R7PLUST25
 #if defined WARP
 #define DRV_VARIANT         3
 #else
@@ -113,20 +113,20 @@ err: define bus type;
 #endif // WARP
 #else
 #define DRV_VARIANT         2
-#endif // HERMES25
+#endif // R7PLUST25
 
 #ifdef BUS_PCMCIA
-#if defined HERMES25
+#if defined R7PLUST25
 #define MODULE_NAME         DRIVER_NAME "_h25_cs"
 #else
 #define MODULE_NAME         DRIVER_NAME "_h2_cs"
-#endif  /* HERMES25 */
+#endif  /* R7PLUST25 */
 #elif defined BUS_PCI
-#if defined HERMES25
+#if defined R7PLUST25
 #define MODULE_NAME         DRIVER_NAME "_h25"
 #else
 #define MODULE_NAME         DRIVER_NAME "_h2"
-#endif  /* HERMES25 */
+#endif  /* R7PLUST25 */
 #endif  /* BUS_XXX */
 
 #ifdef DBG

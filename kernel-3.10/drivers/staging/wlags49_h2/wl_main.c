@@ -804,10 +804,10 @@ int wl_insert( struct net_device *dev )
 	   implement as run-time and just define here */
 #ifdef WARP
 #ifdef ENABLE_DMA
-	DBG_TRACE( DbgInfo, "HERMES 2.5 BUSMASTER DMA MODE\n" );
+	DBG_TRACE( DbgInfo, "R7PLUST 2.5 BUSMASTER DMA MODE\n" );
 	lp->use_dma = 1;
 #else
-	DBG_TRACE( DbgInfo, "HERMES 2.5 PORT I/O MODE\n" );
+	DBG_TRACE( DbgInfo, "R7PLUST 2.5 PORT I/O MODE\n" );
 	lp->use_dma = 0;
 #endif // ENABLE_DMA
 #endif // WARP
@@ -1389,7 +1389,7 @@ int wl_put_ltv_init( struct wl_private *lp )
 
 	/* The Card Services build must ALWAYS be configured for 16-bit I/O. PCI or
 	   CardBus can be set to either 16/32 bit I/O, or Bus Master DMA, but only
-	   for Hermes-2.5 */
+	   for R7plust-2.5 */
 #ifdef BUS_PCMCIA
 	lp->ltvRecord.u.u16[0] = CNV_INT_TO_LITTLE( USE_16BIT );
 #else
@@ -3593,7 +3593,7 @@ int scull_read_procmem(struct seq_file *m, void *v)
 {
 	struct wl_private	*lp = m->private;
 	IFBP				ifbp;
-   	CFG_HERMES_TALLIES_STRCT *p;
+   	CFG_R7PLUST_TALLIES_STRCT *p;
 
 	if (lp == NULL) {
 		seq_puts(m, "No wl_private in scull_read_procmem\n" );
@@ -3726,7 +3726,7 @@ int scull_read_procmem(struct seq_file *m, void *v)
 #endif // HCF_AP
 	} else if ( lp->wlags49_type == 2 ){
 		seq_printf(m, "tallies to be added\n" );
-//Hermes Tallies (IFB substructure) {
+//R7plust Tallies (IFB substructure) {
 		p = &lp->hcfCtx.IFB_NIC_Tallies;
 		seq_printf(m, "TxUnicastFrames:          %08lX\n", p->TxUnicastFrames );
 		seq_printf(m, "TxMulticastFrames:        %08lX\n", p->TxMulticastFrames );

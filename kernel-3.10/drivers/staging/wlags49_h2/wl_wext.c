@@ -85,7 +85,7 @@ extern dbg_info_t *DbgInfo;
 
 
 /* Set up the LTV to program the appropriate key */
-static int hermes_set_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr,
+static int r7plust_set_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr,
 				int set_tx, u8 *seq, u8 *key, size_t key_len)
 {
 	int ret = -EINVAL;
@@ -97,7 +97,7 @@ static int hermes_set_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr,
 
 	/*
 	 * Check the key index here; if 0, load as Pairwise Key, otherwise,
-	 * load as a group key. Note that for the Hermes, the RIDs for
+	 * load as a group key. Note that for the R7plust, the RIDs for
 	 * group/pairwise keys are different from each other and different
 	 * than the default WEP keys as well.
 	 */
@@ -168,7 +168,7 @@ static int hermes_set_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr,
 }
 
 /* Set up the LTV to clear the appropriate key */
-static int hermes_clear_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr)
+static int r7plust_clear_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr)
 {
 	int ret;
 
@@ -199,7 +199,7 @@ static int hermes_clear_tkip_keys(ltv_t *ltv, u16 key_idx, u8 *addr)
 }
 
 /* Set the WEP keys in the wl_private structure */
-static int hermes_set_wep_keys(struct wl_private *lp, u16 key_idx,
+static int r7plust_set_wep_keys(struct wl_private *lp, u16 key_idx,
 			       u8 *key, size_t key_len,
 			       bool enable, bool set_tx)
 {
@@ -1349,7 +1349,7 @@ static int wireless_set_encode(struct net_device *dev, struct iw_request_info *i
 
 	wl_act_int_off(lp);
 
-	ret = hermes_set_wep_keys(lp, key_idx, keybuf, erq->length,
+	ret = r7plust_set_wep_keys(lp, key_idx, keybuf, erq->length,
 				  enable, true);
 
 	/* Send an event that Encryption has been set */
@@ -3119,12 +3119,12 @@ static int wireless_set_encodeext(struct net_device *dev,
 			goto out_unlock;
 		}
 
-		ret = hermes_set_tkip_keys(&ltv, key_idx, ext->addr.sa_data,
+		ret = r7plust_set_tkip_keys(&ltv, key_idx, ext->addr.sa_data,
 					   set_tx,
 					   ext->rx_seq, ext->key, ext->key_len);
 
 		if (ret != 0) {
-			DBG_TRACE(DbgInfo, "hermes_set_tkip_keys returned != 0, key not set\n");
+			DBG_TRACE(DbgInfo, "r7plust_set_tkip_keys returned != 0, key not set\n");
 			goto out_unlock;
 		}
 
@@ -3145,7 +3145,7 @@ static int wireless_set_encodeext(struct net_device *dev,
 			goto out_unlock;
 		}
 
-		ret = hermes_set_wep_keys(lp, key_idx, ext->key, ext->key_len,
+		ret = r7plust_set_wep_keys(lp, key_idx, ext->key, ext->key_len,
 					  enable, set_tx);
 
 		break;
@@ -3159,14 +3159,14 @@ static int wireless_set_encodeext(struct net_device *dev,
 		DBG_TRACE(DbgInfo, "IW_ENCODE_ALG_NONE: key(%d)\n", key_idx);
 
 		if (lp->wext_enc == IW_ENCODE_ALG_TKIP) {
-			ret = hermes_clear_tkip_keys(&ltv, key_idx,
+			ret = r7plust_clear_tkip_keys(&ltv, key_idx,
 						     ext->addr.sa_data);
 			flush_tx(lp);
 			lp->wext_enc = IW_ENCODE_ALG_NONE;
 			ret = hcf_put_info(&(lp->hcfCtx), (LTVP)&ltv);
 
 		} else if (lp->wext_enc == IW_ENCODE_ALG_WEP) {
-			ret = hermes_set_wep_keys(lp, key_idx,
+			ret = r7plust_set_wep_keys(lp, key_idx,
 						  ext->key, ext->key_len,
 						  false, false);
 		} else {
@@ -3253,7 +3253,7 @@ struct iw_statistics * wl_wireless_stats( struct net_device *dev )
 	if( !( lp->flags & WVLAN2_UIL_BUSY ))
 	{
 		CFG_COMMS_QUALITY_STRCT *pQual;
-		CFG_HERMES_TALLIES_STRCT tallies;
+		CFG_R7PLUST_TALLIES_STRCT tallies;
 		int                         status;
 
 		/* Update driver status */

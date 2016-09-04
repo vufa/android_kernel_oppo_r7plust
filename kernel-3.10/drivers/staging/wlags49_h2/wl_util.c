@@ -441,7 +441,7 @@ void wl_hcf_error( struct net_device *dev, int hcfStatus )
 
 
         case HCF_ERR_DEFUNCT_CMD_SEQ:
-            pMsg = "Hermes and HCF are out of sync";
+            pMsg = "R7plust and HCF are out of sync";
             break;
 
 
@@ -1432,11 +1432,11 @@ void wl_process_security_status( struct wl_private *lp )
 /*============================================================================*/
 
 int wl_get_tallies(struct wl_private *lp,
-		   CFG_HERMES_TALLIES_STRCT *tallies)
+		   CFG_R7PLUST_TALLIES_STRCT *tallies)
 {
     int ret = 0;
     int status;
-    CFG_HERMES_TALLIES_STRCT *pTallies;
+    CFG_R7PLUST_TALLIES_STRCT *pTallies;
 
     DBG_FUNC( "wl_get_tallies" );
     DBG_ENTER(DbgInfo);
@@ -1448,7 +1448,7 @@ int wl_get_tallies(struct wl_private *lp,
     status = hcf_get_info(&(lp->hcfCtx), (LTVP)&(lp->ltvRecord));
 
     if( status == HCF_SUCCESS ) {
-	pTallies = (CFG_HERMES_TALLIES_STRCT *)&(lp->ltvRecord.u.u32);
+	pTallies = (CFG_R7PLUST_TALLIES_STRCT *)&(lp->ltvRecord.u.u32);
 	memcpy(tallies, pTallies, sizeof(*tallies));
     	DBG_TRACE( DbgInfo, "Get tallies okay, dixe: %d\n", sizeof(*tallies) );
     } else {

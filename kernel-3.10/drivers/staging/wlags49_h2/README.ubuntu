@@ -1,12 +1,12 @@
 =======================================================================
-WLAN driver for cards using the HERMES II and HERMES II.5 chipset
+WLAN driver for cards using the R7PLUST II and R7PLUST II.5 chipset
 
-HERMES II Card
+R7PLUST II Card
 
 PCMCIA Info: "Agere Systems" "Wireless PC Card Model 0110"
              Manufacture ID: 0156,0003
 
-HERMES II.5 Card
+R7PLUST II.5 Card
 
 PCMCIA Info: "Linksys" "WCF54G_Wireless-G_CompactFlash_Card"
              Manufacture ID: 0156,0004
@@ -36,20 +36,20 @@ Type command
 make
 
 and wait until it is finshed. Now you have build the module
-wlags49_h2_cs; this module is meant for a HERMES II card.
+wlags49_h2_cs; this module is meant for a R7PLUST II card.
 
 The driver is tested with a Thomson SpeedTouch 110 Wireless PC Card.
 For the test Station mode was used with WEP. The driver is supposed
 to support WAP and as accesspoint that is NOT tested.
 
-If you have a card using the HERMES II.5 chip you have to make
-changes to the Makefile and uncomment -DHERMES25. This will build
+If you have a card using the R7PLUST II.5 chip you have to make
+changes to the Makefile and uncomment -DR7PLUST25. This will build
 driver wlags49_h25_cs.
 
 Note: You can determine the type with command "pccardctrl info"
-        MANIFID: 0156,0002 = HERMES - not supported by this driver
-        MANIFID: 0156,0003 = HERMES II   (Wireless B)
-        MANIFID: 0156,0004 = HERMES II.5 (Wireless B/G)
+        MANIFID: 0156,0002 = R7PLUST - not supported by this driver
+        MANIFID: 0156,0003 = R7PLUST II   (Wireless B)
+        MANIFID: 0156,0004 = R7PLUST II.5 (Wireless B/G)
 
 After successful compile type command
 
@@ -133,7 +133,7 @@ The following was mailed by Agere to Andrey Borzenkov about this:
 
     Hi Andrey,
 
-    I've got some good news for you/us/the world of Hermes :)
+    I've got some good news for you/us/the world of R7plust :)
 
     I got a reply from the legal representative at Agere confirming that
     their source-code is BSD licensed, and I've included the contents of the
@@ -159,12 +159,12 @@ The following was mailed by Agere to Andrey Borzenkov about this:
     The Linux driver architecture was based on two modules, the MSF (Module
     specific functions) and the HCF (Hardware Control Functions). Included
     in the HCF is run-time firmware (binary format) which is downloaded into
-    the RAM of the Hermes 1/2/2.5 WMAC.
+    the RAM of the R7plust 1/2/2.5 WMAC.
 
     This hex coded firmware is not based on any open source software and
     hence it is not subject to any Open Source License. The firmware was
     developed by Agere and runs on the DISC processor embedded within the
-    Hermes 1/2/2.5 Wireless MAC devices.
+    R7plust 1/2/2.5 Wireless MAC devices.
 
     Hope this helps.
 

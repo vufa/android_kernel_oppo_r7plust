@@ -1,4 +1,4 @@
-/* Encapsulate basic setting changes on Hermes hardware
+/* Encapsulate basic setting changes on R7plust hardware
  *
  * See copyright notice in main.c
  */

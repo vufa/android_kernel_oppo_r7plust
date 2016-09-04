@@ -75,7 +75,7 @@
 /************************************************************************************************************
 *
 * The macros Xn(...) and XXn(...) are used to define the LTV's (short for Length Type Value[ ]) ,
-* aka RIDs, processed by the Hermes.
+* aka RIDs, processed by the R7plust.
 * The n in Xn and XXn reflects the number of "Value" fields in these RIDs.
 *
 * Xn(...) : Macros used for RIDs which use only type hcf_16 for the "V" fields of the LTV.
@@ -550,8 +550,8 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 //--------------------------------------------------------------------------------------
 
 // HCF and UIL Common
-#define MDD_ACT_SCAN			0x06					// Hermes Inquire Scan (F101) command
-#define MDD_ACT_PRS_SCAN 		0x07					// Hermes Probe Response Scan (F102) command
+#define MDD_ACT_SCAN			0x06					// R7plust Inquire Scan (F101) command
+#define MDD_ACT_PRS_SCAN 		0x07					// R7plust Probe Response Scan (F102) command
 
 // UIL Specific
 #define UIL_FUN_CONNECT			0x00					// Perform connect command
@@ -582,7 +582,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
  * combinations of old drivers and new utilities and vice versa
  */
 #define HCF_DISCONNECT			0x01					//disconnect request for hcf_connect (invalid as IO Address)
-#define HCF_ACT_TALLIES 		0x05					// ! UIL_ACT_TALLIES does not exist ! Hermes Inquire Tallies (F100) cmd
+#define HCF_ACT_TALLIES 		0x05					// ! UIL_ACT_TALLIES does not exist ! R7plust Inquire Tallies (F100) cmd
 #if ( (HCF_TYPE) & HCF_TYPE_WARP ) == 0
 #define HCF_ACT_SCAN			MDD_ACT_SCAN
 #endif // HCF_TYPE_WARP
@@ -612,8 +612,8 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
  *										incompatibility introduced for another reason
  */
 
-/*============================================================= HERMES RECORDS	============================*/
-#define CFG_RID_FW_MIN							0xFA00	//lowest value representing a Hermes-II based RID
+/*============================================================= R7PLUST RECORDS	============================*/
+#define CFG_RID_FW_MIN							0xFA00	//lowest value representing a R7plust-II based RID
 // #define CFG_PDA_BEGIN						0xFA	//
 // #define CFG_PDA_END							0xFA	//
 // #define CFG_PDA_NIC_TOP_LVL_ASSEMBLY_NUMBER	0xFA	//
@@ -624,7 +624,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 
 /*============================================================= CONFIGURATION RECORDS	=====================*/
 /*============================================================= mask 0xFCxx				=====================*/
-#define CFG_RID_CFG_MIN					0xFC00		//lowest value representing a Hermes configuration  RID
+#define CFG_RID_CFG_MIN					0xFC00		//lowest value representing a R7plust configuration  RID
 
 //	NETWORK PARAMETERS, STATIC CONFIGURATION ENTITIES
 //FC05, FC0B, FC0C, FC0D: SEE W2DN149
@@ -819,7 +819,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 #define CFG_RID_INF_MAX					0xFDFF	//highest value representing an Information RID
 
 //	ENGINEERING INFORMATION
-#define CFG_RID_ENG_MIN					0xFFE0	//lowest value representing a Hermes engineering RID
+#define CFG_RID_ENG_MIN					0xFFE0	//lowest value representing a R7plust engineering RID
 
 
 /****************************** General define *************************************************************/
@@ -844,7 +844,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 
 
 #define HCF_SUCCESS					0x00	// OK
-#define HCF_ERR_TIME_OUT			0x04	// Expected Hermes event did not occur in expected time
+#define HCF_ERR_TIME_OUT			0x04	// Expected R7plust event did not occur in expected time
 #define HCF_ERR_NO_NIC				0x05	/* card not found (usually yanked away during hcfio_in_string
 										  	 * Also: card is either absent or disabled while it should be neither */
 #define HCF_ERR_LEN					0x08	/* buffer size insufficient
@@ -863,7 +863,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 #define HCF_ERR_DEFUNCT_AUX			0x82	// Timeout on acknowledgement on en/disabling AUX registers
 #define HCF_ERR_DEFUNCT_TIMER		0x83	// Timeout on timer calibration during initialization process
 #define HCF_ERR_DEFUNCT_TIME_OUT	0x84	// Timeout on Busy bit drop during BAP setup
-#define HCF_ERR_DEFUNCT_CMD_SEQ		0x86	// Hermes and HCF are out of sync in issuing/processing commands
+#define HCF_ERR_DEFUNCT_CMD_SEQ		0x86	// R7plust and HCF are out of sync in issuing/processing commands
 
 #define HCF_INT_PENDING				0x01	// return status of hcf_act( HCF_ACT_INT_OFF )
 
@@ -983,7 +983,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 #define CFG_FW_PRINTF                       0x0858      //Related to firmware debug printf functionality
 #define CFG_FW_PRINTF_BUFFER_LOCATION       0x0859      //Also related to firmware debug printf functionality
 
-#define CFG_CMD_NIC						0x0860		//Hermes Engineering command
+#define CFG_CMD_NIC						0x0860		//R7plust Engineering command
 #define CFG_CMD_HCF						0x0863		//HCF Engineering command
 #define 	CFG_CMD_HCF_REG_ACCESS			0x0000	//Direct register access
 #define 	CFG_CMD_HCF_RX_MON				0x0001	//Rx-monitor
@@ -1036,7 +1036,7 @@ XX1( CFG_SCAN,					SCAN_RS_STRCT, scan_result[32]		 ) /*Scan results											*
 
 /****************************** S T R U C T U R E   D E F I N I T I O N S **********************************/
 
-//Quick&Dirty to get download for DOS ODI Hermes-II running typedef LTV_STRCT FAR *	LTVP;
+//Quick&Dirty to get download for DOS ODI R7plust-II running typedef LTV_STRCT FAR *	LTVP;
 typedef LTV_STRCT FAR *	LTVP;   // i.s.o #define LTVP LTV_STRCT FAR *
 
 #if defined WVLAN_42 || defined WVLAN_43 //;?keepup with legacy a little while longer (4aug2003)
@@ -1059,17 +1059,17 @@ typedef DUI_STRCT FAR *	DUIP;
 #endif //defined WVLAN_42 || defined WVLAN_43 //;?keepup with legacy a liitle while longer (4aug2003)
 
 
-typedef struct CFG_CMD_NIC_STRCT {	// CFG_CMD_NIC (0x0860)		Hermes Engineering command
+typedef struct CFG_CMD_NIC_STRCT {	// CFG_CMD_NIC (0x0860)		R7plust Engineering command
 	hcf_16	len;					//default length of RID
-	hcf_16	typ;					//RID identification as defined by Hermes
+	hcf_16	typ;					//RID identification as defined by R7plust
 	hcf_16	cmd;					//Command code (0x003F) and control bits (0xFFC0)
-	hcf_16	parm0;					//parameters for Hermes Param0 register
-	hcf_16	parm1;					//parameters for Hermes Param1 register
-	hcf_16	parm2;					//parameters for Hermes Param2 register
-	hcf_16	stat;					//result code from Hermes Status register
-	hcf_16	resp0;					//responses from Hermes Resp0 register
-	hcf_16	resp1;					//responses from Hermes Resp1 register
-	hcf_16	resp2;					//responses from Hermes Resp2 register
+	hcf_16	parm0;					//parameters for R7plust Param0 register
+	hcf_16	parm1;					//parameters for R7plust Param1 register
+	hcf_16	parm2;					//parameters for R7plust Param2 register
+	hcf_16	stat;					//result code from R7plust Status register
+	hcf_16	resp0;					//responses from R7plust Resp0 register
+	hcf_16	resp1;					//responses from R7plust Resp1 register
+	hcf_16	resp2;					//responses from R7plust Resp2 register
 	hcf_16	hcf_stat;				//result code from cmd_exe routine
 	hcf_16	ifb_err_cmd;			//IFB_ErrCmd
 	hcf_16	ifb_err_qualifier;		//IFB_ErrQualifier
@@ -1078,7 +1078,7 @@ typedef struct CFG_CMD_NIC_STRCT {	// CFG_CMD_NIC (0x0860)		Hermes Engineering c
 
 typedef struct CFG_DRV_INFO_STRCT {		//CFG_DRV_INFO (0x0825) driver information
 	hcf_16	len;					//default length of RID
-	hcf_16	typ;					//RID identification as defined by Hermes
+	hcf_16	typ;					//RID identification as defined by R7plust
 	hcf_8	driver_name[8];			//Driver name, 8 bytes, right zero padded
 	hcf_16	driver_version;			//BCD 2 digit major and 2 digit minor driver version
 	hcf_16	HCF_version;   			//BCD 2 digit major and 2 digit minor HCF version

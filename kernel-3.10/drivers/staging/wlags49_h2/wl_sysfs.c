@@ -39,7 +39,7 @@ static ssize_t show_tallies(struct device *d, struct device_attribute *attr,
     struct net_device *dev = to_net_dev(d);
     struct wl_private *lp = wl_priv(dev);
     unsigned long flags;
-    CFG_HERMES_TALLIES_STRCT tallies;
+    CFG_R7PLUST_TALLIES_STRCT tallies;
     ssize_t ret = -EINVAL;
 
     rcu_read_lock();

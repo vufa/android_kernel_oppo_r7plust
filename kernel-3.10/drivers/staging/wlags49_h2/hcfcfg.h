@@ -253,18 +253,18 @@ typedef unsigned long			hcf_32;
 #define HCF_TYPE_NONE			0x0000	// No type
 #define HCF_TYPE_WPA			0x0001	// WPA support
 #define HCF_TYPE_USB			0x0002	// reserved (USB Dongle driver support)
-//#define HCF_TYPE_HII			0x0004	// Hermes-II, to discriminate H-I and H-II CFG_HCF_OPT_STRCT
+//#define HCF_TYPE_HII			0x0004	// R7plust-II, to discriminate H-I and H-II CFG_HCF_OPT_STRCT
 #define HCF_TYPE_WARP			0x0008	// WARP F/W
 #define HCF_TYPE_PRELOADED		0x0040	// pre-loaded F/W
-#define HCF_TYPE_HII5			0x0080	// Hermes-2.5 H/W
+#define HCF_TYPE_HII5			0x0080	// R7plust-2.5 H/W
 #define HCF_TYPE_CCX			0x0100	// CKIP
-#define HCF_TYPE_BEAGLE_HII5	0x0200	// Beagle Hermes-2.5 H/W
+#define HCF_TYPE_BEAGLE_HII5	0x0200	// Beagle R7plust-2.5 H/W
 #define HCF_TYPE_TX_DELAY		0x4000	// Delayed transmission ( non-DMA only)
 
 /****************************** #define HCF_ASSERT ******************************/
 #define HCF_ASSERT_NONE			0x0000	// No assert support
-#define HCF_ASSERT_PRINTF		0x0001	// Hermes generated debug info
-#define HCF_ASSERT_SW_SUP		0x0002	// logging via Hermes support register
+#define HCF_ASSERT_PRINTF		0x0001	// R7plust generated debug info
+#define HCF_ASSERT_SW_SUP		0x0002	// logging via R7plust support register
 #define HCF_ASSERT_MB			0x0004	// logging via Mailbox
 #define HCF_ASSERT_RT_MSF_RTN	0x4000	// dynamically binding of msf_assert routine
 #define HCF_ASSERT_LNK_MSF_RTN	0x8000	// statically binding of msf_assert routine
@@ -276,13 +276,13 @@ typedef unsigned long			hcf_32;
 
 /****************************** #define HCF_EXT *********************************/
 #define HCF_EXT_NONE			0x0000	// No expanded features
-#define HCF_EXT_INFO_LOG		0x0001	// logging of Hermes Info frames
+#define HCF_EXT_INFO_LOG		0x0001	// logging of R7plust Info frames
 //#define HCF_EXT_INT_TX_OK		0x0002	// RESERVED!!! monitoring successful Tx message
 #define HCF_EXT_INT_TX_EX		0x0004	// monitoring unsuccessful Tx message
 //#define HCF_EXT_MON_MODE		0x0008	// LEGACY
-#define HCF_EXT_TALLIES_FW		0x0010	// support for up to 32 Hermes Engineering tallies
+#define HCF_EXT_TALLIES_FW		0x0010	// support for up to 32 R7plust Engineering tallies
 #define HCF_EXT_TALLIES_HCF		0x0020	// support for up to 8 HCF Engineering tallies
-#define HCF_EXT_NIC_ACCESS		0x0040	// direct access via Aux-ports and to Hermes registers and commands
+#define HCF_EXT_NIC_ACCESS		0x0040	// direct access via Aux-ports and to R7plust registers and commands
 #define HCF_EXT_MB				0x0080	// MailBox code expanded
 #define HCF_EXT_IFB_STRCT 		0x0100	// MSF custom pointer in IFB
 #define HCF_EXT_DESC_STRCT 		0x0200	// MSF custom pointer in Descriptor
@@ -295,7 +295,7 @@ typedef unsigned long			hcf_32;
 
 /****************************** #define HCF_TALLIES ******************************/
 #define HCF_TALLIES_NONE		0x0000	// No tally support
-#define HCF_TALLIES_NIC			0x0001	// Hermes Tallies accumulated in IFB
+#define HCF_TALLIES_NIC			0x0001	// R7plust Tallies accumulated in IFB
 #define HCF_TALLIES_HCF			0x0002	// HCF Tallies accumulated in IFB
 #define HCF_TALLIES_RESET		0x8000	// Tallies in IFB are reset when reported via hcf_get_info
 
@@ -318,14 +318,14 @@ typedef unsigned long			hcf_32;
 /* Note: Non-WARP firmware all support WPA. However the original Agere
  * linux driver does not enable WPA. Enabling WPA here causes whatever
  * preliminary WPA logic to be included, some of which may be specific
- * to HERMESI.
+ * to R7PLUSTI.
  *
  * Various comment are clear that WARP and WPA are not compatible
  * (which may just mean WARP does WPA in a different fashion).
  */
 
 /* #define HCF_TYPE    (HCF_TYPE_HII5|HCF_TYPE_STA|HCF_TYPE_AP) */
-#ifdef HERMES25
+#ifdef R7PLUST25
 #ifdef WARP
 #define HCF_TYPE    ( HCF_TYPE_WARP | HCF_TYPE_HII5 )
 #else
@@ -333,7 +333,7 @@ typedef unsigned long			hcf_32;
 #endif /* WARP */
 #else
 #define HCF_TYPE    HCF_TYPE_WPA
-#endif /* HERMES25 */
+#endif /* R7PLUST25 */
 
 #ifdef ENABLE_DMA
 #define HCF_DMA		1
@@ -392,7 +392,7 @@ typedef unsigned long			hcf_32;
 
 
 
-#if 0  //;? #ifdef get this going LATER HERMES25
+#if 0  //;? #ifdef get this going LATER R7PLUST25
 #define HCF_IO              HCF_IO_32BITS
 #define HCF_DMA             1
 #define HCF_DESC_STRCT_EXT  4
@@ -404,7 +404,7 @@ typedef unsigned long			hcf_32;
 #define ENABLE_DMA
 #endif  // USE_PCMCIA
 
-#endif  // HERMES25
+#endif  // R7PLUST25
 
 
 /* Overrule standard WaveLAN Packet Size when in DMA mode */
@@ -641,7 +641,7 @@ err: HSI variants 4 correspond with HII;
 #else
 
 #if ! defined	HCF_HSI_VAR_4
-#define			HCF_HSI_VAR_4		//Hermes-II all types (for the time being!)
+#define			HCF_HSI_VAR_4		//R7plust-II all types (for the time being!)
 #endif //		HCF_HSI_VAR_4
 
 #if ! defined	HCF_APF_VAR_2
@@ -752,7 +752,7 @@ err: invalid value for HCF_MAX_LTV;
 #endif // HCF_MAX_LTV
 
 #if HCF_PROT_TIME != 0 && ( HCF_PROT_TIME < 19 || 256 < HCF_PROT_TIME )
-err: below minimum .08 second required by Hermes or possibly above hcf_32 capacity;
+err: below minimum .08 second required by R7plust or possibly above hcf_32 capacity;
 #endif // HCF_PROT_TIME
 
 #if (HCF_SLEEP) & ~( HCF_CDS | HCF_DDS )

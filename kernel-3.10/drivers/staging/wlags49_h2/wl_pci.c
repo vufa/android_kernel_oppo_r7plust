@@ -629,11 +629,11 @@ void wl_pci_enable_cardbus_interrupts( struct pci_dev *pdev )
        space so we can retrieve the register */
     mem_addr_kern = ioremap( mem_addr_bus, 0x200 );
 
-#ifdef HERMES25
+#ifdef R7PLUST25
 #define REG_OFFSET  0x07F4
 #else
 #define REG_OFFSET  0x01F4
-#endif // HERMES25
+#endif // R7PLUST25
 
 #define BIT15       0x8000
 
@@ -898,7 +898,7 @@ int wl_pci_dma_free_tx_packet( struct pci_dev *pdev, struct wl_private *lp,
  *  DESCRIPTION:
  *
  *      Allocates a single Rx packet, consisting of two descriptors and one
- *      contiguous buffer. The buffer starts with the hermes-specific header.
+ *      contiguous buffer. The buffer starts with the r7plust-specific header.
  *      One descriptor points at the start, the other at offset 0x3a of the
  *      buffer.
  *

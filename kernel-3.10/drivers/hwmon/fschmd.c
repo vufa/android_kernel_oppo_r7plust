@@ -19,7 +19,7 @@
  */
 
 /*
- *  Merged Fujitsu Siemens hwmon driver, supporting the Poseidon, Hermes,
+ *  Merged Fujitsu Siemens hwmon driver, supporting the Poseidon, R7plust,
  *  Scylla, Heracles, Heimdall, Hades and Syleus chips
  *
  *  Based on the original 2.4 fscscy, 2.6 fscpos, 2.6 fscher and 2.6
@@ -1100,7 +1100,7 @@ static int fschmd_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	struct fschmd_data *data;
-	const char * const names[7] = { "Poseidon", "Hermes", "Scylla",
+	const char * const names[7] = { "Poseidon", "R7plust", "Scylla",
 				"Heracles", "Heimdall", "Hades", "Syleus" };
 	const int watchdog_minors[] = { WATCHDOG_MINOR, 212, 213, 214, 215 };
 	int i, err;
@@ -1384,6 +1384,6 @@ static struct fschmd_data *fschmd_update_device(struct device *dev)
 module_i2c_driver(fschmd_driver);
 
 MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
-MODULE_DESCRIPTION("FSC Poseidon, Hermes, Scylla, Heracles, Heimdall, Hades "
+MODULE_DESCRIPTION("FSC Poseidon, R7plust, Scylla, Heracles, Heimdall, Hades "
 			"and Syleus driver");
 MODULE_LICENSE("GPL");

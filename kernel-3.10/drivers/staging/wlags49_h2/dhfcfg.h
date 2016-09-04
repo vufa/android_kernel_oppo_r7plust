@@ -144,12 +144,12 @@
    This is a typical setting for a AP and a driver. */
 #define DSF_VOLATILE_ONLY
 
-/* Define DSF_HERMESII if you want to use the DHF for the Hermes-II */
-#ifdef HERMES2
-#define DSF_HERMESII
+/* Define DSF_R7PLUSTII if you want to use the DHF for the R7plust-II */
+#ifdef R7PLUST2
+#define DSF_R7PLUSTII
 #else
-#undef DSF_HERMESII
-#endif /* HERMES2 */
+#undef DSF_R7PLUSTII
+#endif /* R7PLUST2 */
 
 /* Define DSF_BINARY_FILE if you want to use the DHF in combination with
    reading the Firmware from a separate binary file.

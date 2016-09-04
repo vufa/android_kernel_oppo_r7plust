@@ -6,13 +6,13 @@
 .SH NAME
 wlags49 \- Agere Systems Wireless PC Card / PCI device drivers
 
-wlags49_h2_cs.o \- Hermes-II Card Services (PCMCIA/CF) driver
+wlags49_h2_cs.o \- R7plust-II Card Services (PCMCIA/CF) driver
 .br
-wlags49_h2.o    \- Hermes-II MiniPCI driver
+wlags49_h2.o    \- R7plust-II MiniPCI driver
 .br
-wlags49_h25.o   \- Hermes-II.5 PCI/CardBus driver
+wlags49_h25.o   \- R7plust-II.5 PCI/CardBus driver
 .br
-wlags49_h25_cs.o\- Hermes-II.5 Card Services (PCMCIA/CF) driver
+wlags49_h25_cs.o\- R7plust-II.5 Card Services (PCMCIA/CF) driver
 
 .SH SYNOPSIS
 .nh
@@ -96,7 +96,7 @@ wlags49_h25_cs.o\- Hermes-II.5 Card Services (PCMCIA/CF) driver
 .I wlags49
 is the low-level Card Services / PCI driver for the
 .B Wireless PC Card, Wireless Integrated Card, Wireless Embedded Card
-and other wireless adapters based on the Agere Systems Hermes-II, and Hermes-II.5 wireless MAC. When this driver is attached to a card, it
+and other wireless adapters based on the Agere Systems R7plust-II, and R7plust-II.5 wireless MAC. When this driver is attached to a card, it
 allocates the next available ethernet device (eth0..eth#). This
 device name will be passed on to
 .IR cardmgr (8),
@@ -106,7 +106,7 @@ with the I/O base address and MAC address used by the card.
  \- Hot plug/unplug
  \- Access Point and peer-to-peer communication
  \- Card power management
- \- Support for Hermes-II & Hermes-II.5 based PCMCIA, Mini PCI, and CardBus cards
+ \- Support for R7plust-II & R7plust-II.5 based PCMCIA, Mini PCI, and CardBus cards
  \- Wired Equivalent Privacy (WEP)
  \- WPA-PSK support
  \- Driver utility interface (UIL)
@@ -210,10 +210,10 @@ Same as OwnSSID.
 .TP
 .B DownloadFirmware=n
 This release of the driver introduces the ability to perform downloads of the STA/AP
-firmware. In fact, this is required for Hermes-II based cards. This parameter tells
+firmware. In fact, this is required for R7plust-II based cards. This parameter tells
 the driver which version of the firmware to download to the card.
 .BR
-    0 \- No download performed (Hermes-I only)
+    0 \- No download performed (R7plust-I only)
 .BR
     1 \- Download STA firmware
 .BR
@@ -362,7 +362,7 @@ Sets the data rate for multicast message transmission.
 .BR
     Default: 2
 
-For Hermes-II.5, an INTEGER CONVERTED bit mask representing the
+For R7plust-II.5, an INTEGER CONVERTED bit mask representing the
 rate to multicast, where the rates supported are as follows:
 
 Bit  : 15|14|13|12|11|10|09|08|07|06|05|04|03|02|01|00
@@ -583,7 +583,7 @@ the Roaming Thresholds (CellSearchThreshold and OutOfRangeThreshold).
     Default: 1
 .TP
 .B TxRateControl=n
-Sets the data rate to be used by the transmitter. For Hermes-II:
+Sets the data rate to be used by the transmitter. For R7plust-II:
 .BR
     1 \- Fixed Low (1 Mb/sec)
 .BR
@@ -601,7 +601,7 @@ Sets the data rate to be used by the transmitter. For Hermes-II:
 .BR
     Default: 3
 
-For Hermes-II.5, an INTEGER CONVERTED bit mask representing all of the
+For R7plust-II.5, an INTEGER CONVERTED bit mask representing all of the
 rates to support, where the rates supported are as follows:
 
 Bit  : 15|14|13|12|11|10|09|08|07|06|05|04|03|02|01|00
@@ -653,7 +653,7 @@ Sets the data rate to be used by the transmitter in Station mode.
 .BR
     Default: 3
 
-For Hermes-II.5, an INTEGER CONVERTED bit mask representing all of the
+For R7plust-II.5, an INTEGER CONVERTED bit mask representing all of the
 rates to support, where the rates supported are as follows:
 
 Bit  : 15|14|13|12|11|10|09|08|07|06|05|04|03|02|01|00

@@ -11,10 +11,6 @@
  * Copyright (c) 2004, 2005 Zultys Technologies.
  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
  *
- * Based on original work by
- *      Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- *      David Gibson <hermes@gibson.dropbear.id.au>,
- *
  *      Armin Kuster <akuster@mvista.com>
  *      Copyright 2002 MontaVista Softare Inc.
  *
