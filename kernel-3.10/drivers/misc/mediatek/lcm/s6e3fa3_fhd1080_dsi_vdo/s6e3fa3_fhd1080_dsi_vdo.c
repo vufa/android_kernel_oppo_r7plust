@@ -358,9 +358,9 @@ static void lcm_setbacklight_cmdq(void* handle,unsigned int level)
 	unsigned char value = level;
 	dsi_set_cmdq_V22(handle,cmd,count,&value,1);
 }
-LCM_DRIVER s6e3fa3_fhd_dsi_cmd_lcm_drv = 
+LCM_DRIVER s6e3fa3_fhd1080_dsi_vdo_lcm_drv = 
 {
-	.name			= "s6e3fa3_fhd_dsi_cmd",
+	.name			= "s6e3fa3_fhd1080_dsi_vdo",
 	.set_util_funcs 		= lcm_set_util_funcs,
 	.get_params     		= lcm_get_params,
 	.init           			= lcm_init,

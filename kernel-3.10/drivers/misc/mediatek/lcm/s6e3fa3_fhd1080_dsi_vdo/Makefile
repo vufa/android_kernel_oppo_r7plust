@@ -3,8 +3,4 @@
 #
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
-obj-y += s6e3fa3_fhd_dsi_cmd.o
-
-
-
-
+obj-y += s6e3fa3_fhd1080_dsi_vdo.o
