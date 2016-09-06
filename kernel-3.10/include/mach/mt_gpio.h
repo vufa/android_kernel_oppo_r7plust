@@ -12,7 +12,7 @@
 #include <mach/mt_gpio_fpga.h>
 #else
 /* FIX-ME: marked for early porting */
-#include <cust_gpio_usage.h>
+#include <mach/cust_gpio_usage.h>
 #include <mach/mt_gpio_base.h>
 #include <mach/mt_gpio_affix.h>
 #endif
