@@ -38,6 +38,7 @@
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h>
+#include <linux/xlog.h>
 #include <asm/atomic.h>
 //#include <asm/system.h>
 /*#include <linux/xlog.h>*/

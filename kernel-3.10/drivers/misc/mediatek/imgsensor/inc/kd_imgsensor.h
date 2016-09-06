@@ -106,9 +106,9 @@
 #define OV5670MIPI_2ND_SENSOR_ID				0x5671
 #define S5K3M2_SENSOR_ID                        (0x30D2)
 #define S5K3M2_2ND_SENSOR_ID                    (0x30d3)
-/* XRN 2 CAMERAS end*/
-#define IMX278_SENSOR_ID                        0x0278
+/* XRN 2 CAMERAS end*/ 
 #define IMX230_SENSOR_ID                        0x0230
+//End of vanzo:wuzhiyong
 #define IMX220_SENSOR_ID                        0x0220
 #define IMX219_SENSOR_ID                        0x0219
 #define IMX214_SENSOR_ID                        0x0214
@@ -266,9 +266,9 @@
 #define SENSOR_DRVNAME_OV5670_2ND_MIPI_RAW          "ov5670_2nd_mipi"
 #define SENSOR_DRVNAME_S5K3M2_MIPI_RAW          	"s5k3m2mipiraw"
 #define SENSOR_DRVNAME_S5K3M2_2ND_MIPI_RAW      	"s5k3m2_2ndmipiraw"
-/* XRN 2 CAMERAS end*/
-#define SENSOR_DRVNAME_IMX278_MIPI_RAW          "imx278mipiraw"
+/* XRN 2 CAMERAS end*/ 
 #define SENSOR_DRVNAME_IMX230_MIPI_RAW          "imx230mipiraw"
+//End of vanzo:wuzhiyong
 #define SENSOR_DRVNAME_IMX220_MIPI_RAW          "imx220mipiraw"
 #define SENSOR_DRVNAME_IMX219_MIPI_RAW          "imx219mipiraw"
 #define SENSOR_DRVNAME_IMX214_MIPI_RAW          "imx214mipiraw"
